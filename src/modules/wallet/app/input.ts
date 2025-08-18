@@ -8,3 +8,9 @@ export interface UpdateBalanceInput {
   tokenId: string;
   balance: number;
 }
+
+export interface CreditCard {
+  num: number;
+  currency: string;
+  balance?: number;
+}

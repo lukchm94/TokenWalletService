@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,11 +12,9 @@ import {
 } from '@nestjs/common';
 import { AppLoggerService } from 'src/shared/logger/app-logger.service';
 import { ApiRoutes, WalletRoutes } from 'src/shared/router/routes';
-import { WalletService } from '../app/app-wallet.service';
-import type {
-  CreateWalletInput,
-  UpdateBalanceInput,
-} from '../app/useCase/createWallet/input';
+import { CurrencyEnum, validCurrencies } from 'src/shared/validations/currency';
+import type { CreditCard, UpdateBalanceInput } from '../app/input';
+import { WalletService } from '../app/services/app-wallet.service';
 import { Wallet } from '../domain/wallet.entity';
 
 @Controller(ApiRoutes.WALLET)
@@ -29,18 +28,26 @@ export class WalletController {
   ) {}
 
   @Get()
-  async allWallets(): Promise<{ data: Wallet[] }> {
+  async allWallets(): Promise<{ elements: number; data: Wallet[] }> {
     this.logger.debug(this.logPrefix, 'Getting all wallets.');
     const wallets = await this.walletService.getAll();
-    return { data: wallets };
+    return { elements: wallets.length, data: wallets };
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createWallet(
-    @Body() input: CreateWalletInput,
-  ): Promise<{ tokenId: string }> {
+  async createWallet(@Body() input: CreditCard): Promise<{ tokenId: string }> {
     this.logger.debug(this.logPrefix, 'Creating wallet.');
+    if (!validCurrencies.includes(input.currency as CurrencyEnum)) {
+      this.logger.warn(
+        this.logPrefix,
+        `Invalid currency code: ${input.currency}`,
+      );
+      const err = new BadRequestException(
+        `Invalid currency type: ${input.currency}. Valid currencies are: ${validCurrencies.join(', ')}`,
+      );
+      throw err;
+    }
     const tokenId: string = await this.walletService.create(input);
     return { tokenId: tokenId };
   }

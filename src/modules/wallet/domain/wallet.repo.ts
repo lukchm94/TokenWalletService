@@ -1,5 +1,5 @@
 import { InjectionToken } from '@nestjs/common';
-import { CreateWalletInput } from '../app/useCase/createWallet/input';
+import { CreateWalletInput } from '../app/input';
 import { Wallet } from '../domain/wallet.entity';
 
 export interface WalletRepository {

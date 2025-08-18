@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/shared/database/prisma.service';
 import { AppLoggerService } from 'src/shared/logger/app-logger.service';
 import { WalletRepository } from '../../../../wallet/domain/wallet.repo';
-import { CreateWalletInput } from '../../../app/useCase/createWallet/input';
+import { CreateWalletInput } from '../../../app/input';
 import { Wallet } from '../../../domain/wallet.entity';
 import { WalletMapper } from '../mappers/wallet.mapper';
 import { WalletDao } from '../wallet.dao';
