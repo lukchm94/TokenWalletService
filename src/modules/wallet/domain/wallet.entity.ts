@@ -1,6 +1,6 @@
 import {
-  CurrencyType,
   CurrencyEnum,
+  CurrencyType,
 } from '../../../shared/validations/currency';
 
 export class Wallet {
@@ -16,6 +16,7 @@ export class Wallet {
     CurrencyEnum.USD,
     CurrencyEnum.GBP,
     CurrencyEnum.HKD,
+    CurrencyEnum.PLN,
   ];
 
   public static create(params: {

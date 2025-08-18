@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { AppLoggerService } from '../../../../../shared/logger/app-logger.service';
-import { CreateWalletInput } from '../../../app/useCase/createWallet/input';
+import { CreateWalletInput } from '../../../app/input';
 import { Wallet } from '../../../domain/wallet.entity';
 import { WalletRepository } from '../../../domain/wallet.repo';
 import { WalletDao } from '../wallet.dao';
