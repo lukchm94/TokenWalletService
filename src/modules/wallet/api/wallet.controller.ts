@@ -1,8 +1,21 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { AppLoggerService } from 'src/shared/logger/app-logger.service';
-import { ApiRoutes } from 'src/shared/router/routes';
+import { ApiRoutes, WalletRoutes } from 'src/shared/router/routes';
 import { WalletService } from '../app/app-wallet.service';
-import type { CreateWalletInput } from '../app/useCase/createWallet/input';
+import type {
+  CreateWalletInput,
+  UpdateBalanceInput,
+} from '../app/useCase/createWallet/input';
 import { Wallet } from '../domain/wallet.entity';
 
 @Controller(ApiRoutes.WALLET)
@@ -23,11 +36,23 @@ export class WalletController {
   }
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async createWallet(
     @Body() input: CreateWalletInput,
   ): Promise<{ tokenId: string }> {
     this.logger.debug(this.logPrefix, 'Creating wallet.');
     const tokenId: string = await this.walletService.create(input);
     return { tokenId: tokenId };
+  }
+
+  @Patch(WalletRoutes.UPDATE)
+  async updateWalletBalance(@Body() input: UpdateBalanceInput): Promise<void> {
+    await this.walletService.updateBalance(input.tokenId, input.balance);
+  }
+
+  @Delete(WalletRoutes.DELETE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteWallet(@Param('tokenId') tokenId: string): Promise<void> {
+    await this.walletService.delete(tokenId);
   }
 }

@@ -3,3 +3,8 @@ export enum ApiRoutes {
   HEALTH = `${ApiRoutes.API}/health`,
   WALLET = `${ApiRoutes.API}/wallet`,
 }
+
+export enum WalletRoutes {
+  UPDATE = 'update',
+  DELETE = ':tokenId',
+}
