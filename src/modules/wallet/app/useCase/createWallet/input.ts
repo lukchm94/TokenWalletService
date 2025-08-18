@@ -3,3 +3,8 @@ export interface CreateWalletInput {
   balance: number;
   currency: string;
 }
+
+export interface UpdateBalanceInput {
+  tokenId: string;
+  balance: number;
+}

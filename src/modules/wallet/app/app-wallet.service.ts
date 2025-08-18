@@ -4,6 +4,7 @@ import { Wallet } from '../domain/wallet.entity';
 import type { WalletRepository } from '../domain/wallet.repo';
 import { WALLET_REPOSITORY_TOKEN } from '../domain/wallet.repo';
 import { CreateWalletInput } from './useCase/createWallet/input';
+
 @Injectable()
 export class WalletService {
   private get logPrefix(): string {
@@ -29,5 +30,13 @@ export class WalletService {
     this.logger.debug(this.logPrefix, 'Getting all wallets from the service');
     const wallets = await this.repo.getAllWallets();
     return wallets;
+  }
+
+  public async updateBalance(tokenId: string, balance: number): Promise<void> {
+    await this.repo.updateWalletBalance(tokenId, balance);
+  }
+
+  public async delete(tokenId: string): Promise<void> {
+    await this.repo.deleteWallet(tokenId);
   }
 }

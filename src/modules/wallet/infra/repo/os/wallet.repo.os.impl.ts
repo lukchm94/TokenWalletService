@@ -5,7 +5,7 @@ import { AppLoggerService } from '../../../../../shared/logger/app-logger.servic
 import { CreateWalletInput } from '../../../app/useCase/createWallet/input';
 import { Wallet } from '../../../domain/wallet.entity';
 import { WalletRepository } from '../../../domain/wallet.repo';
-import { WalletDao } from './wallet.dao';
+import { WalletDao } from '../wallet.dao';
 
 const WALLET_FILE_PATH: string = path.join(
   __dirname,
