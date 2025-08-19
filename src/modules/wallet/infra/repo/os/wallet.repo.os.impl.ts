@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { FundsInWallet } from 'src/modules/wallet/app/output';
 import { AppLoggerService } from '../../../../../shared/logger/app-logger.service';
 import { CreateWalletInput } from '../../../app/input';
 import { Wallet } from '../../../domain/wallet.entity';
@@ -45,7 +46,10 @@ export class WalletRepositoryImpl implements WalletRepository {
     return [...wallets.values()];
   }
 
-  async updateWalletBalance(tokenId: string, balance: number): Promise<void> {
+  async updateWalletBalance(
+    tokenId: string,
+    balance: number,
+  ): Promise<FundsInWallet> {
     const wallets = await this.loadWallets();
     const wallet = wallets.get(tokenId);
     if (!wallet) {
@@ -56,6 +60,12 @@ export class WalletRepositoryImpl implements WalletRepository {
     const updatedWallets = wallets;
     updatedWallets.set(wallet?.tokenId, wallet);
     await this.saveToJSON(updatedWallets);
+    return {
+      tokenId: wallet.tokenId,
+      oldBalance: wallet.balance - balance,
+      currentBalance: wallet.balance,
+      currency: wallet.currency,
+    };
   }
 
   async deleteWallet(tokenId: string): Promise<void> {
