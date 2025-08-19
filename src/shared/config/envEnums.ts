@@ -1,4 +1,5 @@
 export enum EnvVariables {
   TOKEN_KEY = 'TOKEN_SECRET_KEY',
   TOKEN_ALGORITHM = 'TOKEN_ALGORITHM',
+  API_KEY = 'EXCHANGE_RATE_API_KEY',
 }

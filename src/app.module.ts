@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { HealthModule } from './modules/health/health.module';
 import { WalletModule } from './modules/wallet/wallet.module';
+import { CurrencyClientModule } from './shared/clients/currencyExchange/currency.module';
 import { PrismaModule } from './shared/database/prisma.module';
 import { LoggerModule } from './shared/logger/logger.module';
 
@@ -13,11 +12,10 @@ import { LoggerModule } from './shared/logger/logger.module';
     LoggerModule,
     WalletModule,
     PrismaModule,
+    CurrencyClientModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

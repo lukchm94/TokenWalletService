@@ -6,3 +6,10 @@ export interface FundsInWallet {
   currentBalance: number;
   currency: CurrencyType;
 }
+
+export interface ExchangeAttempt {
+  newCurrency: CurrencyType;
+  exchangeRate: number;
+  amount: number;
+  convertedAt: Date;
+}

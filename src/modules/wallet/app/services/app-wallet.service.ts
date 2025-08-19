@@ -1,10 +1,12 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { ExchangeRate } from '../../../../shared/clients/currencyExchange/output';
+import { CurrencyClientService } from '../../../../shared/clients/currencyExchange/services/currency.service';
 import { AppLoggerService } from '../../../../shared/logger/app-logger.service';
 import { Wallet } from '../../domain/wallet.entity';
 import type { WalletRepository } from '../../domain/wallet.repo';
 import { WALLET_REPOSITORY_TOKEN } from '../../domain/wallet.repo';
-import { CreditCard } from '../input';
-import { FundsInWallet } from '../output';
+import { CreditCard, TriggerExchange } from '../input';
+import { ExchangeAttempt, FundsInWallet } from '../output';
 import { TokenizationService } from './tokenization.service';
 
 @Injectable()
@@ -16,6 +18,7 @@ export class WalletService {
   constructor(
     private readonly logger: AppLoggerService,
     private readonly tokenService: TokenizationService,
+    private readonly currencyClientService: CurrencyClientService,
     @Inject(WALLET_REPOSITORY_TOKEN)
     private readonly repo: WalletRepository,
   ) {}
@@ -48,8 +51,55 @@ export class WalletService {
     return funds;
   }
 
+  public async getByTokenId(tokenId: string): Promise<Wallet> {
+    const wallet = await this.repo.getWalletByTokenId(tokenId);
+    if (!wallet) {
+      throw new Error(
+        `${this.logPrefix} wallet with token: ${tokenId} not found`,
+      );
+    }
+    return wallet;
+  }
+
   public async delete(tokenId: string): Promise<void> {
     await this.repo.deleteWallet(tokenId);
+  }
+
+  public async exchange(input: TriggerExchange): Promise<ExchangeAttempt> {
+    const wallet = await this.getByTokenId(input.tokenId);
+    if (wallet.balance <= 0) {
+      const balanceError = `Wallet balance below 0: ${wallet.balance}. Exchange not permitted.`;
+      this.logger.error(this.logPrefix, balanceError);
+      throw new BadRequestException(balanceError);
+    }
+    if (wallet.currency === input.targetCurrency) {
+      const exchangeError =
+        'Current and targetCurrencies are the same the rate will always be 1.00';
+      this.logger.error(this.logPrefix, exchangeError);
+      throw new BadRequestException(exchangeError);
+    }
+    const rate: ExchangeRate = await this.currencyClientService.getExchangeRate(
+      wallet.currency,
+      input.targetCurrency,
+    );
+    const attempt = this.convert(wallet, rate);
+    return attempt;
+  }
+
+  private convert(wallet: Wallet, exchangeRate: ExchangeRate): ExchangeAttempt {
+    if (wallet.currency !== exchangeRate.from) {
+      const currencyError = `Incorrect wallet's currency for the conversion. Wallet: ${wallet.currency}, Rate: ${exchangeRate.from}.`;
+      this.logger.error(this.logPrefix, currencyError);
+      throw new Error(currencyError);
+    }
+    const exchangedBalance: number = wallet.balance * exchangeRate.rate;
+    const attempt: ExchangeAttempt = {
+      newCurrency: exchangeRate.to,
+      exchangeRate: exchangeRate.rate,
+      amount: exchangedBalance,
+      convertedAt: new Date(),
+    };
+    return attempt;
   }
 
   private getBalance(balance?: number): number {
