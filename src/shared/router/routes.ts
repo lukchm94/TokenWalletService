@@ -7,4 +7,5 @@ export enum ApiRoutes {
 export enum WalletRoutes {
   UPDATE = 'update',
   DELETE = ':tokenId',
+  EXCHANGE = 'exchange',
 }
