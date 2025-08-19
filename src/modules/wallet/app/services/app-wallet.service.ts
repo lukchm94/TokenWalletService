@@ -4,6 +4,7 @@ import { Wallet } from '../../domain/wallet.entity';
 import type { WalletRepository } from '../../domain/wallet.repo';
 import { WALLET_REPOSITORY_TOKEN } from '../../domain/wallet.repo';
 import { CreditCard } from '../input';
+import { FundsInWallet } from '../output';
 import { TokenizationService } from './tokenization.service';
 
 @Injectable()
@@ -39,8 +40,12 @@ export class WalletService {
     return wallets;
   }
 
-  public async updateBalance(tokenId: string, balance: number): Promise<void> {
-    await this.repo.updateWalletBalance(tokenId, balance);
+  public async updateBalance(
+    tokenId: string,
+    balance: number,
+  ): Promise<FundsInWallet> {
+    const funds = await this.repo.updateWalletBalance(tokenId, balance);
+    return funds;
   }
 
   public async delete(tokenId: string): Promise<void> {

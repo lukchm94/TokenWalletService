@@ -3,6 +3,7 @@ import { PrismaService } from 'src/shared/database/prisma.service';
 import { AppLoggerService } from 'src/shared/logger/app-logger.service';
 import { WalletRepository } from '../../../../wallet/domain/wallet.repo';
 import { CreateWalletInput } from '../../../app/input';
+import { FundsInWallet } from '../../../app/output';
 import { Wallet } from '../../../domain/wallet.entity';
 import { WalletMapper } from '../mappers/wallet.mapper';
 import { WalletDao } from '../wallet.dao';
@@ -68,7 +69,10 @@ export class WalletRepositoryImpl implements WalletRepository {
     return wallets;
   }
 
-  async updateWalletBalance(tokenId: string, balance: number): Promise<void> {
+  async updateWalletBalance(
+    tokenId: string,
+    balance: number,
+  ): Promise<FundsInWallet> {
     this.logger.debug(
       this.logPrefix,
       `Updating wallet: ${tokenId}, with ${balance}`,
@@ -91,6 +95,15 @@ export class WalletRepositoryImpl implements WalletRepository {
       this.logPrefix,
       `Wallet for tokenId: ${updatedWallet.tokenId} successfully updated. Current balance: ${updatedWallet.balance} ${updatedWallet.currency}`,
     );
+
+    const funds: FundsInWallet = {
+      tokenId: updatedWallet.tokenId,
+      oldBalance: wallet.balance,
+      currentBalance: updatedWallet.balance,
+      currency: wallet.currency,
+    };
+
+    return funds;
   }
 
   async deleteWallet(tokenId: string): Promise<void> {

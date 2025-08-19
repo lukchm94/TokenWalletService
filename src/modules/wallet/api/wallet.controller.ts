@@ -14,6 +14,7 @@ import { AppLoggerService } from 'src/shared/logger/app-logger.service';
 import { ApiRoutes, WalletRoutes } from 'src/shared/router/routes';
 import { CurrencyEnum, validCurrencies } from 'src/shared/validations/currency';
 import type { CreditCard, UpdateBalanceInput } from '../app/input';
+import { FundsInWallet } from '../app/output';
 import { WalletService } from '../app/services/app-wallet.service';
 import { Wallet } from '../domain/wallet.entity';
 
@@ -53,8 +54,14 @@ export class WalletController {
   }
 
   @Patch(WalletRoutes.UPDATE)
-  async updateWalletBalance(@Body() input: UpdateBalanceInput): Promise<void> {
-    await this.walletService.updateBalance(input.tokenId, input.balance);
+  async updateWalletBalance(
+    @Body() input: UpdateBalanceInput,
+  ): Promise<FundsInWallet> {
+    const funds = await this.walletService.updateBalance(
+      input.tokenId,
+      input.balance,
+    );
+    return funds;
   }
 
   @Delete(WalletRoutes.DELETE)
