@@ -4,9 +4,8 @@ import { TransactionTypeEnum } from '../../../shared/validations/transaction/typ
 
 export interface CreateTransactionInput {
   tokenId: string;
-  type: TransactionTypeEnum;
   targetCurrency: CurrencyEnum;
-  amount: number;
+  amount: bigint;
 }
 
 export interface UpdateTransactionInput {
@@ -20,5 +19,5 @@ export interface TransactionInput {
   status: TransactionStatusEnum;
   originCurrency: CurrencyEnum;
   currentCurrency: CurrencyEnum;
-  amount: number;
+  amount: bigint;
 }

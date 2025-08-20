@@ -10,6 +10,6 @@ export interface FundsInWallet {
 export interface ExchangeAttempt {
   newCurrency: CurrencyType;
   exchangeRate: number;
-  amount: number;
+  amount: bigint;
   convertedAt: Date;
 }

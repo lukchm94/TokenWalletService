@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Transaction as TransactionORM } from 'generated/prisma';
 import { PrismaService } from '../../../../shared/database/prisma.service';
 import { AppLoggerService } from '../../../../shared/logger/app-logger.service';
+import { jsonStringifyReplacer } from '../../../../shared/utils/json.utils';
 import { TransactionInput, UpdateTransactionInput } from '../../app/input';
 import { Transaction } from '../../domain/transaction.entity';
 import { TransactionRepository } from '../../domain/transaction.repo';
-
 @Injectable()
 export class TransactionRepoImpl implements TransactionRepository {
   private get logPrefix(): string {
@@ -18,11 +18,11 @@ export class TransactionRepoImpl implements TransactionRepository {
   async create(input: TransactionInput): Promise<Transaction> {
     this.logger.debug(
       this.logPrefix,
-      `Attempting to create a transaction: ${JSON.stringify(input)}`,
+      `Attempting to create a transaction: ${JSON.stringify(input, jsonStringifyReplacer)}`,
     );
     const result = await this.db.transaction.create({ data: input });
     if (!result) {
-      const err = `Error creating transaction with params: ${JSON.stringify(input)}`;
+      const err = `Error creating transaction with params: ${JSON.stringify(input, jsonStringifyReplacer)}`;
       this.logger.warn(this.logPrefix, err);
       throw new Error(err);
     }
@@ -68,7 +68,7 @@ export class TransactionRepoImpl implements TransactionRepository {
   async updateStatus(input: UpdateTransactionInput): Promise<Transaction> {
     this.logger.log(
       this.logPrefix,
-      `Updating transaction: ${JSON.stringify(input)}`,
+      `Updating transaction: ${JSON.stringify(input, jsonStringifyReplacer)}`,
     );
     const transaction = await this.db.transaction.findFirst({
       where: { id: input.transactionId },

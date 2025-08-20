@@ -1,3 +1,4 @@
+import { jsonStringifyReplacer } from '../../../shared/utils/json.utils';
 import {
   CURRENCY_TYPE,
   CurrencyType,
@@ -30,7 +31,7 @@ export class Wallet {
   private static validateCurrency(currency: string): CurrencyType {
     if (!CURRENCY_TYPE.includes(currency as CurrencyType)) {
       throw new Error(
-        `Invalid currency type: ${currency}. Valid currencies: ${JSON.stringify(validCurrencies)}`,
+        `Invalid currency type: ${currency}. Valid currencies: ${JSON.stringify(validCurrencies, jsonStringifyReplacer)}`,
       );
     }
     return currency as CurrencyType;

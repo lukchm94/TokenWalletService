@@ -24,5 +24,6 @@ import { WalletRepositoryImpl } from './infra/repo/postgres/wallet.repo.postgres
       useClass: WalletRepositoryImpl,
     },
   ],
+  exports: [WalletService],
 })
 export class WalletModule {}

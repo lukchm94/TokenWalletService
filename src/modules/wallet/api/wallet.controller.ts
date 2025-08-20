@@ -17,9 +17,13 @@ import { CurrencyValidationPipe } from '../../../shared/pipes/currencyValidation
 import { ApiRoutes, WalletRoutes } from '../../../shared/router/routes';
 import { CurrencyEnum } from '../../../shared/validations/currency';
 import type { CreditCard, UpdateBalanceInput } from '../app/input';
-import { ExchangeAttempt, FundsInWallet } from '../app/output';
 import { WalletService } from '../app/services/app-wallet.service';
 import { Wallet } from '../domain/wallet.entity';
+import {
+  ExchangeRepresentation,
+  FundsRepresentation,
+  WalletRepresentation,
+} from './representation';
 
 @Controller(ApiRoutes.WALLET)
 export class WalletController {
@@ -32,10 +36,24 @@ export class WalletController {
   ) {}
 
   @Get()
-  async allWallets(): Promise<{ elements: number; data: Wallet[] }> {
+  async allWallets(): Promise<{
+    elements: number;
+    data: WalletRepresentation[];
+  }> {
     this.logger.debug(this.logPrefix, 'Getting all wallets.');
     const wallets = await this.walletService.getAll();
-    return { elements: wallets.length, data: wallets };
+    const walletRepresentations: WalletRepresentation[] = wallets.map(
+      (wallet: Wallet) => ({
+        id: wallet.id,
+        tokenId: wallet.tokenId,
+        balance: Number(wallet.balance),
+        currency: wallet.currency,
+      }),
+    );
+    return {
+      elements: walletRepresentations.length,
+      data: walletRepresentations,
+    };
   }
 
   @Post()
@@ -55,12 +73,17 @@ export class WalletController {
   @Patch(WalletRoutes.UPDATE)
   async updateWalletBalance(
     @Body() input: UpdateBalanceInput,
-  ): Promise<FundsInWallet> {
+  ): Promise<FundsRepresentation> {
     const funds = await this.walletService.updateBalance(
       input.tokenId,
       input.balance,
     );
-    return funds;
+    return {
+      tokenId: funds.tokenId,
+      oldBalance: Number(funds.oldBalance),
+      currentBalance: Number(funds.currentBalance),
+      currency: funds.currency,
+    };
   }
 
   @Delete(WalletRoutes.DELETE)
@@ -75,7 +98,7 @@ export class WalletController {
     @Query('targetCurrency', CurrencyValidationPipe)
     targetCurrency: CurrencyEnum,
     @Query('tokenId') tokenId: string,
-  ): Promise<ExchangeAttempt> {
+  ): Promise<ExchangeRepresentation> {
     this.logger.debug(
       this.logPrefix,
       `tokenId: ${tokenId} CUR: ${targetCurrency}`,
@@ -84,6 +107,11 @@ export class WalletController {
       tokenId,
       targetCurrency,
     });
-    return attempt;
+    return {
+      newCurrency: attempt.newCurrency,
+      exchangeRate: attempt.exchangeRate,
+      amount: Number(attempt.amount),
+      convertedAt: attempt.convertedAt,
+    };
   }
 }

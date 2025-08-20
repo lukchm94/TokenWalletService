@@ -2,19 +2,19 @@ import { CurrencyEnum } from 'src/shared/validations/currency';
 
 export interface CreateWalletInput {
   tokenId: string;
-  balance: number;
+  balance: bigint;
   currency: CurrencyEnum;
 }
 
 export interface UpdateBalanceInput {
   tokenId: string;
-  balance: number;
+  balance: bigint;
 }
 
 export interface CreditCard {
   num: number;
   currency: CurrencyEnum;
-  balance?: number;
+  balance?: bigint;
 }
 
 export interface TriggerExchange {

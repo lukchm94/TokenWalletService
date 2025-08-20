@@ -48,7 +48,7 @@ export class WalletRepositoryImpl implements WalletRepository {
 
   async updateWalletBalance(
     tokenId: string,
-    balance: number,
+    balance: bigint,
   ): Promise<FundsInWallet> {
     const wallets = await this.loadWallets();
     const wallet = wallets.get(tokenId);

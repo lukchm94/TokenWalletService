@@ -1,3 +1,4 @@
+import { jsonStringifyReplacer } from '../../../shared/utils/json.utils';
 import {
   CURRENCY_TYPE,
   CurrencyType,
@@ -53,7 +54,7 @@ export class Transaction {
   private static validateTransactionType(type: string): TransactionType {
     if (!TRANSACTION_TYPE_ARRAY.includes(type as TransactionType)) {
       throw new Error(
-        `Invalid transaction type: ${type}. Allowed transaction types: ${JSON.stringify(validTransactionTypes)}`,
+        `Invalid transaction type: ${type}. Allowed transaction types: ${JSON.stringify(validTransactionTypes, jsonStringifyReplacer)}`,
       );
     }
     return type as TransactionType;
@@ -64,7 +65,7 @@ export class Transaction {
   ): TransactionStatusType {
     if (!TRANSACTION_STATUS_TYPE.includes(status as TransactionStatusType)) {
       throw new Error(
-        `Invalid transaction status: ${status}. Allowed transaction types: ${JSON.stringify(validTransactionStatuses)}`,
+        `Invalid transaction status: ${status}. Allowed transaction types: ${JSON.stringify(validTransactionStatuses, jsonStringifyReplacer)}`,
       );
     }
     return status as TransactionStatusType;
@@ -72,7 +73,7 @@ export class Transaction {
   private static validateCurrency(currency: string): CurrencyType {
     if (!CURRENCY_TYPE.includes(currency as CurrencyType)) {
       throw new Error(
-        `Invalid currency type: ${currency}. Allowed currencies: ${JSON.stringify(validCurrencies)}`,
+        `Invalid currency type: ${currency}. Allowed currencies: ${JSON.stringify(validCurrencies, jsonStringifyReplacer)}`,
       );
     }
     return currency as CurrencyType;
