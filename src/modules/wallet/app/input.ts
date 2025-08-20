@@ -3,7 +3,7 @@ import { CurrencyEnum } from 'src/shared/validations/currency';
 export interface CreateWalletInput {
   tokenId: string;
   balance: number;
-  currency: string;
+  currency: CurrencyEnum;
 }
 
 export interface UpdateBalanceInput {
@@ -13,7 +13,7 @@ export interface UpdateBalanceInput {
 
 export interface CreditCard {
   num: number;
-  currency: string;
+  currency: CurrencyEnum;
   balance?: number;
 }
 

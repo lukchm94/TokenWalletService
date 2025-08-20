@@ -14,3 +14,11 @@ export type CurrencyType =
   | CurrencyEnum.PLN;
 
 export const validCurrencies = Object.values(CurrencyEnum);
+
+export const CURRENCY_TYPE: CurrencyType[] = [
+  CurrencyEnum.EUR,
+  CurrencyEnum.USD,
+  CurrencyEnum.GBP,
+  CurrencyEnum.HKD,
+  CurrencyEnum.PLN,
+];
