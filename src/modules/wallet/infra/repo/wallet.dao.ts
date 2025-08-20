@@ -1,6 +1,6 @@
 export interface WalletDao {
   id: number;
   tokenId: string;
-  balance: number;
+  balance: bigint;
   currency: string;
 }

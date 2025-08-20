@@ -2,6 +2,8 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ExchangeRate } from '../../../../shared/clients/currencyExchange/output';
 import { CurrencyClientService } from '../../../../shared/clients/currencyExchange/services/currency.service';
 import { AppLoggerService } from '../../../../shared/logger/app-logger.service';
+import { jsonStringifyReplacer } from '../../../../shared/utils/json.utils';
+import { CurrencyEnum } from '../../../../shared/validations/currency';
 import { Wallet } from '../../domain/wallet.entity';
 import type { WalletRepository } from '../../domain/wallet.repo';
 import { WALLET_REPOSITORY_TOKEN } from '../../domain/wallet.repo';
@@ -26,7 +28,7 @@ export class WalletService {
   public async create(input: CreditCard): Promise<string> {
     this.logger.debug(
       this.logPrefix,
-      `Calling create wallet in a service with input: ${JSON.stringify(input)}`,
+      `Calling create wallet in a service with input: ${JSON.stringify(input, jsonStringifyReplacer)}`,
     );
     const tokenId = this.tokenService.generateToken(input.num);
     const createdWalletId = await this.repo.createWallet({
@@ -45,9 +47,15 @@ export class WalletService {
 
   public async updateBalance(
     tokenId: string,
-    balance: number,
+    balance: bigint,
+    currency?: CurrencyEnum,
   ): Promise<FundsInWallet> {
-    const funds = await this.repo.updateWalletBalance(tokenId, balance);
+    const funds = await this.repo.updateWalletBalance(
+      tokenId,
+      balance,
+      currency,
+    );
+
     return funds;
   }
 
@@ -92,7 +100,8 @@ export class WalletService {
       this.logger.error(this.logPrefix, currencyError);
       throw new Error(currencyError);
     }
-    const exchangedBalance: number = wallet.balance * exchangeRate.rate;
+    const rateAsBigInt = BigInt(Math.round(exchangeRate.rate * 100));
+    const exchangedBalance = (wallet.balance * rateAsBigInt) / 100n;
     const attempt: ExchangeAttempt = {
       newCurrency: exchangeRate.to,
       exchangeRate: exchangeRate.rate,
@@ -102,9 +111,9 @@ export class WalletService {
     return attempt;
   }
 
-  private getBalance(balance?: number): number {
+  private getBalance(balance?: bigint): bigint {
     if (!balance) {
-      return 0;
+      return BigInt(0);
     }
     return balance;
   }

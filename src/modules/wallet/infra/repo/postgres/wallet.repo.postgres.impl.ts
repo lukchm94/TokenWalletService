@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/shared/database/prisma.service';
-import { AppLoggerService } from 'src/shared/logger/app-logger.service';
+import { PrismaService } from '../../../../../shared/database/prisma.service';
+import { AppLoggerService } from '../../../../../shared/logger/app-logger.service';
+import { jsonStringifyReplacer } from '../../../../../shared/utils/json.utils';
+import { CurrencyEnum } from '../../../../../shared/validations/currency';
 import { WalletRepository } from '../../../../wallet/domain/wallet.repo';
 import { CreateWalletInput } from '../../../app/input';
 import { FundsInWallet } from '../../../app/output';
@@ -23,15 +25,17 @@ export class WalletRepositoryImpl implements WalletRepository {
   async createWallet(input: CreateWalletInput): Promise<string> {
     this.logger.debug(
       this.logPrefix,
-      `Attempting to create a wallet: ${JSON.stringify(input)}`,
+      `Attempting to create a wallet: ${input.tokenId}`,
     );
     const result = await this.prismaDb.wallet.create({ data: input });
     if (!result) {
       this.logger.warn(
         this.logPrefix,
-        `Error saving the wallet with params: ${JSON.stringify(input)}`,
+        `Error saving the wallet with params: ${JSON.stringify(input, jsonStringifyReplacer)}`,
       );
-      throw new Error(`Error saving the wallet: ${JSON.stringify(input)}`);
+      throw new Error(
+        `Error saving the wallet: ${JSON.stringify(input, jsonStringifyReplacer)}`,
+      );
     }
     this.logger.log(this.logPrefix, 'Saved wallet');
     return result.tokenId;
@@ -60,10 +64,6 @@ export class WalletRepositoryImpl implements WalletRepository {
     );
     const wallets: Wallet[] = [];
     walletsDao.forEach((walletDao: WalletDao) => {
-      this.logger.log(
-        this.logPrefix,
-        `INSIDE THE FOR LOOP: ${JSON.stringify(walletDao)}`,
-      );
       wallets.push(this.mapper.fromDaoToObject(walletDao));
     });
     return wallets;
@@ -71,7 +71,8 @@ export class WalletRepositoryImpl implements WalletRepository {
 
   async updateWalletBalance(
     tokenId: string,
-    balance: number,
+    balance: bigint,
+    currency?: CurrencyEnum,
   ): Promise<FundsInWallet> {
     this.logger.debug(
       this.logPrefix,
@@ -88,6 +89,7 @@ export class WalletRepositoryImpl implements WalletRepository {
         balance: {
           increment: balance,
         },
+        currency: currency ?? wallet.currency,
       },
     });
 

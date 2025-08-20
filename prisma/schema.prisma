@@ -15,8 +15,49 @@ datasource db {
 }
 
 model Wallet {
-  id       Int    @id @default(autoincrement())
-  tokenId  String
-  balance  Float
-  currency String
+  id           Int           @id @default(autoincrement())
+  tokenId      String        @unique
+  balance      BigInt
+  currency     Currency
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime?     @updatedAt
+  transactions Transaction[]
+}
+
+model Transaction {
+  id              Int               @id @default(autoincrement())
+  walletId        Int
+  wallet          Wallet            @relation(fields: [walletId], references: [id])
+  type            TransactionType
+  status          TransactionStatus @default(PENDING)
+  createdAt       DateTime          @default(now())
+  originCurrency  Currency
+  currentCurrency Currency
+  amount          BigInt
+  updatedAt       DateTime?         @updatedAt
+
+  @@index([walletId])
+  @@index([createdAt])
+  @@index([walletId, createdAt])
+}
+
+enum Currency {
+  USD
+  EUR
+  GBP
+  HKD
+  PLN
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  EXCHANGE
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
 }

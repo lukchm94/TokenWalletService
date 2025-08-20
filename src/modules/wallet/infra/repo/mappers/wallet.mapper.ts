@@ -13,7 +13,7 @@ export class WalletMapper {
   public fromDaoToObject(val: WalletDao): Wallet {
     this.logger.debug(
       this.logPrefix,
-      `Converting ${JSON.stringify(val)} to Entity Object`,
+      `Converting ${val.tokenId} to Entity Object`,
     );
     return Wallet.create({
       id: val.id,

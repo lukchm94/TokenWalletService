@@ -9,11 +9,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
+import { jsonStringifyReplacer } from '../../../../shared/utils/json.utils';
 import { EnvVariables } from '../../../config/envEnums';
 import { AppLoggerService } from '../../../logger/app-logger.service';
 import { CurrencyEnum, validCurrencies } from '../../../validations/currency';
 import { CurrencyApiResponse, ExchangeRate } from '../output';
-
 @Injectable()
 export class CurrencyClientService {
   private readonly baseUrl: string;
@@ -39,7 +39,7 @@ export class CurrencyClientService {
     const allRates = await this.getRates(from);
     this.logger.log(
       this.logPrefix,
-      `Found allRates in public: ${JSON.stringify(allRates.conversion_rates)}`,
+      `Found allRates in public: ${JSON.stringify(allRates.conversion_rates, jsonStringifyReplacer)}`,
     );
     if (!allRates) {
       throw new BadRequestException(`Currency not found: ${from} -> ${to}`);
@@ -51,7 +51,7 @@ export class CurrencyClientService {
     };
     this.logger.debug(
       this.logPrefix,
-      `Response: ${JSON.stringify(rate)} from: ${from} to: ${to} rate: ${allRates.conversion_rates[to]}`,
+      `Response: ${JSON.stringify(rate, jsonStringifyReplacer)} from: ${from} to: ${to} rate: ${allRates.conversion_rates[to]}`,
     );
     return rate;
   }
@@ -79,7 +79,7 @@ export class CurrencyClientService {
       );
       this.logger.debug(
         this.logPrefix,
-        `Received the all exchange rates: ${JSON.stringify(response.data)}`,
+        `Received the all exchange rates: ${JSON.stringify(response.data, jsonStringifyReplacer)}`,
       );
       return response.data;
     } catch (error: unknown) {
