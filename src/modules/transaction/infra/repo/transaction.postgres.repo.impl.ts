@@ -15,6 +15,7 @@ export class TransactionRepoImpl implements TransactionRepository {
     private readonly logger: AppLoggerService,
     private readonly db: PrismaService,
   ) {}
+
   async create(input: TransactionInput): Promise<Transaction> {
     this.logger.debug(
       this.logPrefix,
@@ -29,6 +30,7 @@ export class TransactionRepoImpl implements TransactionRepository {
     this.logger.log(this.logPrefix, 'Saved wallet');
     return Transaction.create(result);
   }
+
   async getByWalletId(walletId: number): Promise<Transaction[]> {
     this.logger.log(
       this.logPrefix,
@@ -36,6 +38,7 @@ export class TransactionRepoImpl implements TransactionRepository {
     );
     const results = await this.db.transaction.findMany({
       where: { walletId: walletId },
+      orderBy: [{ createdAt: 'desc' }, { updatedAt: 'desc' }],
     });
     if (!results || results.length === 0) {
       const err = `No transactions found for wallet `;
@@ -48,6 +51,7 @@ export class TransactionRepoImpl implements TransactionRepository {
     });
     return transactions;
   }
+
   async getById(transactionId: number): Promise<Transaction | null> {
     this.logger.log(
       this.logPrefix,
@@ -65,6 +69,7 @@ export class TransactionRepoImpl implements TransactionRepository {
     }
     return Transaction.create(result);
   }
+
   async updateStatus(input: UpdateTransactionInput): Promise<Transaction> {
     this.logger.log(
       this.logPrefix,

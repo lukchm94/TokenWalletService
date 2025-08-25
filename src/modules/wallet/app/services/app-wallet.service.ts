@@ -94,6 +94,11 @@ export class WalletService {
     return attempt;
   }
 
+  public async getByWalletId(walletId: number): Promise<Wallet> {
+    const wallet = await this.repo.getById(walletId);
+    return wallet;
+  }
+
   private convert(wallet: Wallet, exchangeRate: ExchangeRate): ExchangeAttempt {
     if (wallet.currency !== exchangeRate.from) {
       const currencyError = `Incorrect wallet's currency for the conversion. Wallet: ${wallet.currency}, Rate: ${exchangeRate.from}.`;

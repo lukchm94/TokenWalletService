@@ -14,6 +14,7 @@ export interface WalletRepository {
     currency?: CurrencyEnum,
   ): Promise<FundsInWallet>;
   deleteWallet(tokenId: string): Promise<void>;
+  getById(walletId: number): Promise<Wallet>;
 }
 
 export const WALLET_REPOSITORY_TOKEN: InjectionToken<WalletRepository> =

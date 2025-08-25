@@ -64,4 +64,10 @@ export class TransactionService {
     );
     return updatedTransaction;
   }
+
+  public async getAllTransactionsByWallet(
+    walletId: number,
+  ): Promise<Transaction[]> {
+    return await this.transactionRepo.getByWalletId(walletId);
+  }
 }

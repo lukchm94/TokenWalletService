@@ -120,4 +120,15 @@ export class WalletRepositoryImpl implements WalletRepository {
       `Successfully deleted wallet: ${tokenId}`,
     );
   }
+  async getById(walletId: number): Promise<Wallet> {
+    const walletDao = await this.prismaDb.wallet.findFirst({
+      where: { id: walletId },
+    });
+    if (!walletDao) {
+      const err = `No wallet found with the id: ${walletId}`;
+      this.logger.log(this.logPrefix, err);
+      throw new Error(err);
+    }
+    return this.mapper.fromDaoToObject(walletDao);
+  }
 }

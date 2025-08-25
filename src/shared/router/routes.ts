@@ -10,3 +10,7 @@ export enum WalletRoutes {
   DELETE = ':tokenId',
   EXCHANGE = 'exchange',
 }
+
+export enum TransactionRoutes {
+  COMPLETE = 'complete/:walletId',
+}
