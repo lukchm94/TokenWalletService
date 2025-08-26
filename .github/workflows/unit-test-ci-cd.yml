@@ -1,0 +1,44 @@
+# GitHub Actions workflow to run tests and check code coverage
+name: 🧪 CI with Jest Coverage Check
+
+# Triggers the workflow on push or pull request events to the main branch
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A job is a set of steps that execute on the same runner.
+jobs:
+  test-and-coverage:
+    # Specifies the runner environment to use (e.g., Ubuntu Linux)
+    runs-on: ubuntu-latest
+
+    # Defines the steps for this job
+    steps:
+      - name: Checkout repository
+        # Action to checkout your repository code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        # Action to set up Node.js with a specific version
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Or your desired Node.js version
+
+      - name: Install dependencies
+        # Runs the npm install command to install project dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        # Runs the Jest test command with the --coverage flag
+        run: npm run test:cov
+
+      - name: Check code coverage
+        # Uses the Jest Coverage Check action to enforce a minimum coverage threshold
+        # This action will fail the build if the coverage percentage is below the threshold
+        uses: artiomtr/jest-coverage-report-action@v2
+        with:
+          # Sets the minimum coverage threshold to 5%
+          # You can adjust this value as your project grows
+          threshold: 5

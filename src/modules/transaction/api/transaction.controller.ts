@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   ValidationPipe,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { CreateTransactionDto } from '../../../shared/dto/create-transaction.dto
 import { AppLoggerService } from '../../../shared/logger/app-logger.service';
 import { ApiRoutes, TransactionRoutes } from '../../../shared/router/routes';
 import { jsonStringifyReplacer } from '../../../shared/utils/json.utils';
+import { CancelTransactionUseCase } from '../app/cancel-transaction-use-case/cancel-transaction.use-case';
 import { CompleteTransactionUseCase } from '../app/complete-transaction-use-case/complete-transaction.use-case';
 import { CreateTransactionUseCase } from '../app/create-transaction-use-case/create-transaction.use-case';
 import { CreateTransactionInput } from '../app/input';
@@ -36,6 +38,7 @@ export class TransactionController {
     private readonly createTransactionUseCase: CreateTransactionUseCase,
     private readonly completeTransactionUseCase: CompleteTransactionUseCase,
     private readonly transactionRepresentationMapper: TransactionRepresentationMapper,
+    private readonly cancelTransactionUseCase: CancelTransactionUseCase,
   ) {}
 
   @Post()
@@ -87,7 +90,7 @@ export class TransactionController {
     };
   }
 
-  @Post(TransactionRoutes.COMPLETE)
+  @Patch(TransactionRoutes.COMPLETE)
   @HttpCode(HttpStatus.OK)
   async completeTransactions(
     @Param('walletId', ParseIntPipe) walletId: number,
@@ -100,5 +103,14 @@ export class TransactionController {
     const representation =
       this.transactionRepresentationMapper.getOutput(results);
     return { elements: representation.length, data: representation };
+  }
+
+  @Patch(TransactionRoutes.CANCEL)
+  @HttpCode(HttpStatus.OK)
+  async cancel(
+    @Param('transactionId', ParseIntPipe) transactionId: number,
+  ): Promise<TransactionRepresentation> {
+    const result = await this.cancelTransactionUseCase.run(transactionId);
+    return result;
   }
 }

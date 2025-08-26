@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
-import { PrismaService } from 'src/shared/database/prisma.service';
-import { AppLoggerService } from 'src/shared/logger/app-logger.service';
-import { ApiRoutes } from 'src/shared/router/routes';
+import { PrismaService } from '../../../../shared/database/prisma.service';
+import { AppLoggerService } from '../../../../shared/logger/app-logger.service';
+import { ApiRoutes } from '../../../../shared/router/routes';
 
 @Controller(ApiRoutes.HEALTH)
 export class HealthController {
