@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
-import { EnvVariables } from 'src/shared/config/envEnums';
-import { AppLoggerService } from 'src/shared/logger/app-logger.service';
+import { EnvVariables } from '../../../../shared/config/envEnums';
+import { AppLoggerService } from '../../../../shared/logger/app-logger.service';
 
 @Injectable()
 export class TokenizationService {

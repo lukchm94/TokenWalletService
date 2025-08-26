@@ -40,9 +40,6 @@ export class CreateTransactionUseCase {
     const transactionInput = this.buildTransactionInput(wallet, input);
     const transaction = await this.transactionService.create(transactionInput);
 
-    if (!wallet) {
-      this.throwError(input);
-    }
     if (
       transaction.status === TransactionStatusEnum.COMPLETED &&
       transaction.type === TransactionTypeEnum.EXCHANGE
@@ -89,6 +86,14 @@ export class CreateTransactionUseCase {
     wallet: Wallet,
     input: CreateTransactionInput,
   ): TransactionInput {
+    if (
+      wallet.currency === input.targetCurrency &&
+      Number(input.amount) === 0
+    ) {
+      const err = `Requested to change created transaction for: ${Number(input.amount)} for currency: ${input.targetCurrency} which is the same as ${wallet.currency}. No action needed.`;
+      this.logger.error(this.logPrefix, err);
+      throw new BadRequestException(err);
+    }
     const type = this.getTransactionType(
       wallet.currency,
       input.amount,
@@ -100,7 +105,6 @@ export class CreateTransactionUseCase {
       this.logger.error(this.logPrefix, err);
       throw new BadRequestException(err);
     }
-
     const transactionInput: TransactionInput = {
       walletId: wallet.id,
       type: type,
@@ -135,7 +139,7 @@ export class CreateTransactionUseCase {
   }
 
   private throwError(input: CreateTransactionInput): void {
-    throw new Error(
+    throw new BadRequestException(
       `No wallet found for input: ${JSON.stringify(input, jsonStringifyReplacer)}`,
     );
   }

@@ -70,9 +70,25 @@ export class TransactionService {
     walletId: number,
     transactionStatus?: TransactionStatusEnum,
   ): Promise<Transaction[]> {
-    return await this.transactionRepo.getByWalletId(
+    const results = await this.transactionRepo.getByWalletId(
       walletId,
       transactionStatus,
     );
+    if (results.length === 0) {
+      const err = `No transaction found for wallet: ${walletId}`;
+      this.logger.log(this.logPrefix, err);
+      throw new BadRequestException(err);
+    }
+    return results;
+  }
+
+  public async getById(id: number): Promise<Transaction> {
+    const transaction = await this.transactionRepo.getById(id);
+    if (!transaction) {
+      const err = `No transaction found for ID: ${id}`;
+      this.logger.error(this.logPrefix, err);
+      throw new BadRequestException(err);
+    }
+    return transaction;
   }
 }
