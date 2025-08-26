@@ -35,40 +35,31 @@ export class CreateTransactionUseCase {
     const wallet = await this.walletService.getByTokenId(input.tokenId);
 
     if (!wallet) {
-      throw new Error();
+      this.throwError(input);
     }
     const transactionInput = this.buildTransactionInput(wallet, input);
     const transaction = await this.transactionService.create(transactionInput);
 
     if (!wallet) {
-      throw new Error();
-    }
-    const fundsInWallet = await this.updateWallet(wallet, transaction);
-    return fundsInWallet;
-  }
-
-  private async updateWallet(
-    wallet: Wallet,
-    transaction: Transaction,
-  ): Promise<FundsInWallet> {
-    this.logger.debug(
-      this.logPrefix,
-      `Updating wallet: ${JSON.stringify(wallet, jsonStringifyReplacer)} with transaction: ${JSON.stringify(transaction, jsonStringifyReplacer)}`,
-    );
-    if (transaction.type === TransactionTypeEnum.EXCHANGE) {
-      return await this.exchange(wallet, transaction);
+      this.throwError(input);
     }
     if (
-      transaction.type === TransactionTypeEnum.DEPOSIT ||
-      transaction.type === TransactionTypeEnum.WITHDRAWAL
+      transaction.status === TransactionStatusEnum.COMPLETED &&
+      transaction.type === TransactionTypeEnum.EXCHANGE
     ) {
-      return await this.walletService.updateBalance(
-        wallet.tokenId,
-        transaction.amount,
-        wallet.currency,
-      );
+      const fundsInWallet = await this.exchange(wallet, transaction);
+      return fundsInWallet;
     }
-    throw new Error();
+    this.logger.log(
+      this.logPrefix,
+      `Created transaction: ${JSON.stringify(transaction, jsonStringifyReplacer)}. Use api/transaction/complete to complete transaction`,
+    );
+    return {
+      tokenId: wallet.tokenId,
+      oldBalance: wallet.balance,
+      currentBalance: wallet.balance + transaction.amount,
+      currency: transaction.currentCurrency,
+    };
   }
 
   private async exchange(
@@ -104,6 +95,12 @@ export class CreateTransactionUseCase {
       input.targetCurrency,
     );
 
+    if (type === TransactionTypeEnum.EXCHANGE && Number(input.amount) !== 0) {
+      const err = `For ${type} transaction amount must be 0, but received: ${Number(input.amount)}`;
+      this.logger.error(this.logPrefix, err);
+      throw new BadRequestException(err);
+    }
+
     const transactionInput: TransactionInput = {
       walletId: wallet.id,
       type: type,
@@ -134,6 +131,12 @@ export class CreateTransactionUseCase {
     }
     throw new BadRequestException(
       'Invalid combination of currencies and balance. Unable to create transaction',
+    );
+  }
+
+  private throwError(input: CreateTransactionInput): void {
+    throw new Error(
+      `No wallet found for input: ${JSON.stringify(input, jsonStringifyReplacer)}`,
     );
   }
 }

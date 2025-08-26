@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Transaction as TransactionORM } from 'generated/prisma';
+import { TransactionStatusEnum } from 'src/shared/validations/transaction/status';
 import { PrismaService } from '../../../../shared/database/prisma.service';
 import { AppLoggerService } from '../../../../shared/logger/app-logger.service';
 import { jsonStringifyReplacer } from '../../../../shared/utils/json.utils';
@@ -15,6 +16,7 @@ export class TransactionRepoImpl implements TransactionRepository {
     private readonly logger: AppLoggerService,
     private readonly db: PrismaService,
   ) {}
+
   async create(input: TransactionInput): Promise<Transaction> {
     this.logger.debug(
       this.logPrefix,
@@ -29,18 +31,29 @@ export class TransactionRepoImpl implements TransactionRepository {
     this.logger.log(this.logPrefix, 'Saved wallet');
     return Transaction.create(result);
   }
-  async getByWalletId(walletId: number): Promise<Transaction[]> {
+
+  async getByWalletId(
+    walletId: number,
+    transactionStatus?: TransactionStatusEnum,
+  ): Promise<Transaction[]> {
     this.logger.log(
       this.logPrefix,
-      `Searching for transactions for wallet: ${walletId} `,
+      `Searching for transactions for wallet: ${walletId} and transactionStatus: ${transactionStatus} `,
     );
+    const status = transactionStatus ?? TransactionStatusEnum.PENDING;
+    if (status !== transactionStatus) {
+      this.logger.debug(
+        this.logPrefix,
+        `Updated status from: ${transactionStatus} to ${status}`,
+      );
+    }
     const results = await this.db.transaction.findMany({
-      where: { walletId: walletId },
+      where: { walletId: walletId, status: status },
+      orderBy: [{ createdAt: 'asc' }, { updatedAt: 'asc' }],
     });
     if (!results || results.length === 0) {
       const err = `No transactions found for wallet `;
       this.logger.error(this.logPrefix, err);
-      throw new Error(err);
     }
     const transactions: Transaction[] = [];
     results.forEach((transaction: TransactionORM) => {
@@ -48,6 +61,7 @@ export class TransactionRepoImpl implements TransactionRepository {
     });
     return transactions;
   }
+
   async getById(transactionId: number): Promise<Transaction | null> {
     this.logger.log(
       this.logPrefix,
@@ -65,6 +79,7 @@ export class TransactionRepoImpl implements TransactionRepository {
     }
     return Transaction.create(result);
   }
+
   async updateStatus(input: UpdateTransactionInput): Promise<Transaction> {
     this.logger.log(
       this.logPrefix,

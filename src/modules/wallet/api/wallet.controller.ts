@@ -6,7 +6,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Patch,
   Post,
   Query,
   ValidationPipe,
@@ -16,14 +15,10 @@ import { AppLoggerService } from '../../../shared/logger/app-logger.service';
 import { CurrencyValidationPipe } from '../../../shared/pipes/currencyValidation.pipe';
 import { ApiRoutes, WalletRoutes } from '../../../shared/router/routes';
 import { CurrencyEnum } from '../../../shared/validations/currency';
-import type { CreditCard, UpdateBalanceInput } from '../app/input';
+import type { CreditCard } from '../app/input';
 import { WalletService } from '../app/services/app-wallet.service';
 import { Wallet } from '../domain/wallet.entity';
-import {
-  ExchangeRepresentation,
-  FundsRepresentation,
-  WalletRepresentation,
-} from './representation';
+import { ExchangeRepresentation, WalletRepresentation } from './representation';
 
 @Controller(ApiRoutes.WALLET)
 export class WalletController {
@@ -68,22 +63,6 @@ export class WalletController {
     };
     const tokenId: string = await this.walletService.create(creditCard);
     return { tokenId: tokenId };
-  }
-
-  @Patch(WalletRoutes.UPDATE)
-  async updateWalletBalance(
-    @Body() input: UpdateBalanceInput,
-  ): Promise<FundsRepresentation> {
-    const funds = await this.walletService.updateBalance(
-      input.tokenId,
-      input.balance,
-    );
-    return {
-      tokenId: funds.tokenId,
-      oldBalance: Number(funds.oldBalance),
-      currentBalance: Number(funds.currentBalance),
-      currency: funds.currency,
-    };
   }
 
   @Delete(WalletRoutes.DELETE)

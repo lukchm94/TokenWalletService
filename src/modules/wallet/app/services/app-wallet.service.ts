@@ -86,12 +86,18 @@ export class WalletService {
       this.logger.error(this.logPrefix, exchangeError);
       throw new BadRequestException(exchangeError);
     }
+
     const rate: ExchangeRate = await this.currencyClientService.getExchangeRate(
       wallet.currency,
       input.targetCurrency,
     );
     const attempt = this.convert(wallet, rate);
     return attempt;
+  }
+
+  public async getByWalletId(walletId: number): Promise<Wallet> {
+    const wallet = await this.repo.getById(walletId);
+    return wallet;
   }
 
   private convert(wallet: Wallet, exchangeRate: ExchangeRate): ExchangeAttempt {

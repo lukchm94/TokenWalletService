@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { FundsInWallet } from 'src/modules/wallet/app/output';
+import { jsonStringifyReplacer } from 'src/shared/utils/json.utils';
 import { AppLoggerService } from '../../../../../shared/logger/app-logger.service';
 import { CreateWalletInput } from '../../../app/input';
 import { Wallet } from '../../../domain/wallet.entity';
@@ -39,6 +40,15 @@ export class WalletRepositoryImpl implements WalletRepository {
   async getWalletByTokenId(tokenId: string): Promise<Wallet | null> {
     const wallets = await this.loadWallets();
     return wallets.get(tokenId) || null;
+  }
+
+  async getById(walletId: number): Promise<Wallet> {
+    const wallets = await this.loadWallets();
+    this.logger.debug(
+      this.logPrefix,
+      `${JSON.stringify(wallets, jsonStringifyReplacer)}${walletId}`,
+    );
+    throw new Error();
   }
 
   async getAllWallets(): Promise<Wallet[]> {
