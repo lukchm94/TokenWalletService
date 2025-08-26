@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AppLoggerService } from '../../../../shared/logger/app-logger.service';
 import { jsonStringifyReplacer } from '../../../../shared/utils/json.utils';
+import { TransactionStatusEnum } from '../../../../shared/validations/transaction/status';
 import { Transaction } from '../../domain/transaction.entity';
 import type { TransactionRepository } from '../../domain/transaction.repo';
 import { TRANSACTION_REPOSITORY_TOKEN } from '../../domain/transaction.repo';
@@ -67,7 +68,11 @@ export class TransactionService {
 
   public async getAllTransactionsByWallet(
     walletId: number,
+    transactionStatus?: TransactionStatusEnum,
   ): Promise<Transaction[]> {
-    return await this.transactionRepo.getByWalletId(walletId);
+    return await this.transactionRepo.getByWalletId(
+      walletId,
+      transactionStatus,
+    );
   }
 }

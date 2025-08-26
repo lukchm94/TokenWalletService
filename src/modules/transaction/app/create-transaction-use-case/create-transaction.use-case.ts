@@ -95,6 +95,12 @@ export class CreateTransactionUseCase {
       input.targetCurrency,
     );
 
+    if (type === TransactionTypeEnum.EXCHANGE && Number(input.amount) !== 0) {
+      const err = `For ${type} transaction amount must be 0, but received: ${Number(input.amount)}`;
+      this.logger.error(this.logPrefix, err);
+      throw new BadRequestException(err);
+    }
+
     const transactionInput: TransactionInput = {
       walletId: wallet.id,
       type: type,

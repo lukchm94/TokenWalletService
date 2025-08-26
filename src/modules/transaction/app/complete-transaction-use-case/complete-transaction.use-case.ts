@@ -17,14 +17,20 @@ export class CompleteTransactionUseCase {
     private readonly walletService: WalletService,
   ) {}
 
-  public async run(walletId: number): Promise<TransactionOutput[]> {
+  public async run(
+    walletId: number,
+    transactionStatus?: TransactionStatusEnum,
+  ): Promise<TransactionOutput[]> {
     this.logger.log(
       this.logPrefix,
       `Updating ${TransactionStatusEnum.PENDING} transactions for wallet: ${walletId}`,
     );
     const results: TransactionOutput[] = [];
     const transactions: Transaction[] =
-      await this.transactionService.getAllTransactionsByWallet(walletId);
+      await this.transactionService.getAllTransactionsByWallet(
+        walletId,
+        transactionStatus,
+      );
 
     for (const transaction of transactions) {
       if (transaction.status === TransactionStatusEnum.PENDING) {

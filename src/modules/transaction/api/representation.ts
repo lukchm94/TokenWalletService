@@ -14,6 +14,6 @@ export interface TransactionRepresentation {
 }
 
 export interface OutputRepresentation {
-  transactions: TransactionRepresentation[];
-  balances: (FundsRepresentation | null)[];
+  transaction: TransactionRepresentation;
+  balance: FundsRepresentation | null;
 }

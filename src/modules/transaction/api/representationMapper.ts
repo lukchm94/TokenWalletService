@@ -1,8 +1,8 @@
-// src/modules/transaction/api/mapper/transaction-representation.mapper.ts
-
 import { Injectable } from '@nestjs/common';
-import { FundsRepresentation } from 'src/modules/wallet/api/representation';
+import { FundsRepresentation } from '../../../modules/wallet/api/representation';
+import { FundsInWallet } from '../../../modules/wallet/app/output';
 import { TransactionOutput } from '../app/complete-transaction-use-case/output';
+import { Transaction } from '../domain/transaction.entity';
 import {
   OutputRepresentation,
   TransactionRepresentation,
@@ -11,32 +11,41 @@ import {
 @Injectable()
 export class TransactionRepresentationMapper {
   constructor() {}
-  public fromObject(outputs: TransactionOutput[]): OutputRepresentation[] {
-    return outputs.map((output: TransactionOutput) => {
-      let fundsRepresentation: FundsRepresentation | null = null;
-      if (output.funds !== null) {
-        fundsRepresentation = {
-          tokenId: output.funds.tokenId,
-          oldBalance: Number(output.funds.oldBalance),
-          currentBalance: Number(output.funds.currentBalance),
-          currency: output.funds.currency,
-        };
-      }
+  public getOutput(outputs: TransactionOutput[]): OutputRepresentation[] {
+    const representation: OutputRepresentation[] = [];
+    for (const output of outputs) {
+      representation.push({
+        transaction: this.getTransaction(output.transaction),
+        balance: this.getFundsRepresentation(output.funds),
+      });
+    }
 
-      const transactionRepresentation: TransactionRepresentation = {
-        id: output.transaction.id,
-        walletId: output.transaction.walletId,
-        type: output.transaction.type,
-        status: output.transaction.status,
-        originCurrency: output.transaction.originCurrency,
-        currentCurrency: output.transaction.currentCurrency,
-        amount: Number(output.transaction.amount),
-      };
+    return representation;
+  }
 
-      return {
-        transaction: transactionRepresentation,
-        balances: fundsRepresentation,
-      };
-    });
+  public getTransaction(transaction: Transaction): TransactionRepresentation {
+    return {
+      id: transaction.id,
+      walletId: transaction.walletId,
+      type: transaction.type,
+      status: transaction.status,
+      originCurrency: transaction.originCurrency,
+      currentCurrency: transaction.currentCurrency,
+      amount: Number(transaction.amount),
+    };
+  }
+
+  private getFundsRepresentation(
+    funds: FundsInWallet | null,
+  ): FundsRepresentation | null {
+    if (!funds) {
+      return null;
+    }
+    return {
+      tokenId: funds.tokenId,
+      oldBalance: Number(funds.oldBalance),
+      currentBalance: Number(funds.currentBalance),
+      currency: funds.currency,
+    };
   }
 }
