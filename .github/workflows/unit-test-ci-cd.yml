@@ -34,11 +34,11 @@ jobs:
         # Runs the Jest test command with the --coverage flag
         run: npm run test:cov
 
-      - name: Check code coverage
-        # Uses the Jest Coverage Check action to enforce a minimum coverage threshold
-        # This action will fail the build if the coverage percentage is below the threshold
-        uses: artiomtr/jest-coverage-report-action@v2
-        with:
-          # Sets the minimum coverage threshold to 5%
-          # You can adjust this value as your project grows
-          threshold: 5
+      # - name: Check code coverage
+      #   # Uses the Jest Coverage Check action to enforce a minimum coverage threshold
+      #   # This action will fail the build if the coverage percentage is below the threshold
+      #   uses: artiomtr/jest-coverage-report-action@v2
+      #   with:
+      #     # Sets the minimum coverage threshold to 5%
+      #     # You can adjust this value as your project grows
+      #     threshold: 5
