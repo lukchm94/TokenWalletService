@@ -11,6 +11,11 @@ export interface TransactionRepository {
   ): Promise<Transaction[]>;
   getById(transactionId: number): Promise<Transaction | null>;
   updateStatus(input: UpdateTransactionInput): Promise<Transaction>;
+  getByIdempotencyKey(
+    idempotencyKey: string,
+    clientTransactionDate: Date,
+    amount: bigint,
+  ): Promise<Transaction | null>;
 }
 
 export const TRANSACTION_REPOSITORY_TOKEN: InjectionToken<TransactionRepository> =

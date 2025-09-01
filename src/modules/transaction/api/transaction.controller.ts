@@ -1,7 +1,9 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  Headers,
   HttpCode,
   HttpStatus,
   Param,
@@ -19,7 +21,7 @@ import { CancelTransactionUseCase } from '../app/cancel-transaction-use-case/can
 import { CompleteTransactionUseCase } from '../app/complete-transaction-use-case/complete-transaction.use-case';
 import { CreateTransactionUseCase } from '../app/create-transaction-use-case/create-transaction.use-case';
 import { CreateTransactionInput } from '../app/input';
-import { TransactionService } from '../app/services/transaction.service';
+import { TransactionService } from '../domain/services/transaction.service';
 import { Transaction } from '../domain/transaction.entity';
 import {
   OutputRepresentation,
@@ -45,15 +47,24 @@ export class TransactionController {
   @HttpCode(HttpStatus.CREATED)
   async saveTransaction(
     @Body(new ValidationPipe()) input: CreateTransactionDto,
+    @Headers('Idempotency-Key') idempotencyKey: string,
   ): Promise<FundsRepresentation> {
     this.logger.debug(
       this.logPrefix,
       `Creating the transaction use case: ${JSON.stringify(input, jsonStringifyReplacer)}`,
     );
+
+    if (!idempotencyKey) {
+      const err = 'Required Idempotency-Key header is missing.';
+      this.logger.error(this.logPrefix, err);
+      throw new BadRequestException(err);
+    }
     const transactionInput: CreateTransactionInput = {
       tokenId: input.tokenId,
       amount: input.amount,
       targetCurrency: input.currency,
+      clientTransactionDate: input.clientTransactionDate,
+      idempotencyKey,
     };
     const fundsInWallet =
       await this.createTransactionUseCase.run(transactionInput);

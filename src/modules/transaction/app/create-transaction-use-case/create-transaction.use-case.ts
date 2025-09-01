@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { jsonStringifyReplacer } from 'src/shared/utils/json.utils';
 import { TriggerExchange } from '../../../../modules/wallet/app/input';
 import {
@@ -11,9 +15,9 @@ import { AppLoggerService } from '../../../../shared/logger/app-logger.service';
 import { CurrencyEnum } from '../../../../shared/validations/currency';
 import { TransactionStatusEnum } from '../../../../shared/validations/transaction/status';
 import { TransactionTypeEnum } from '../../../../shared/validations/transaction/type';
+import { TransactionService } from '../../domain/services/transaction.service';
 import { Transaction } from '../../domain/transaction.entity';
 import { CreateTransactionInput, TransactionInput } from '../input';
-import { TransactionService } from '../services/transaction.service';
 
 @Injectable()
 export class CreateTransactionUseCase {
@@ -31,7 +35,11 @@ export class CreateTransactionUseCase {
       this.logPrefix,
       `Attempting to save transaction: ${JSON.stringify(input, jsonStringifyReplacer)}`,
     );
-
+    await this.transactionService.checkIdempotency(
+      input.idempotencyKey,
+      input.clientTransactionDate,
+      input.amount,
+    );
     const wallet = await this.walletService.getByTokenId(input.tokenId);
 
     if (!wallet) {
@@ -92,7 +100,7 @@ export class CreateTransactionUseCase {
     ) {
       const err = `Requested to change created transaction for: ${Number(input.amount)} for currency: ${input.targetCurrency} which is the same as ${wallet.currency}. No action needed.`;
       this.logger.error(this.logPrefix, err);
-      throw new BadRequestException(err);
+      throw new UnprocessableEntityException(err);
     }
     const type = this.getTransactionType(
       wallet.currency,
@@ -103,7 +111,7 @@ export class CreateTransactionUseCase {
     if (type === TransactionTypeEnum.EXCHANGE && Number(input.amount) !== 0) {
       const err = `For ${type} transaction amount must be 0, but received: ${Number(input.amount)}`;
       this.logger.error(this.logPrefix, err);
-      throw new BadRequestException(err);
+      throw new UnprocessableEntityException(err);
     }
     const transactionInput: TransactionInput = {
       walletId: wallet.id,
@@ -115,6 +123,8 @@ export class CreateTransactionUseCase {
       originCurrency: wallet.currency,
       currentCurrency: input.targetCurrency,
       amount: input.amount,
+      clientTransactionDate: new Date(input.clientTransactionDate),
+      idempotencyKey: input.idempotencyKey,
     };
     return transactionInput;
   }

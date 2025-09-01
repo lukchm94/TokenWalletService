@@ -25,20 +25,24 @@ model Wallet {
 }
 
 model Transaction {
-  id              Int               @id @default(autoincrement())
-  walletId        Int
-  wallet          Wallet            @relation(fields: [walletId], references: [id])
-  type            TransactionType
-  status          TransactionStatus @default(PENDING)
-  createdAt       DateTime          @default(now())
-  originCurrency  Currency
-  currentCurrency Currency
-  amount          BigInt
-  updatedAt       DateTime?         @updatedAt
+  id                    Int               @id @default(autoincrement())
+  walletId              Int
+  wallet                Wallet            @relation(fields: [walletId], references: [id])
+  type                  TransactionType
+  status                TransactionStatus @default(PENDING)
+  createdAt             DateTime          @default(now())
+  originCurrency        Currency
+  currentCurrency       Currency
+  amount                BigInt
+  updatedAt             DateTime?         @updatedAt
+  idempotencyKey        String?
+  clientTransactionDate DateTime?
 
+  @@unique([idempotencyKey, clientTransactionDate, amount], name: "idempotency_unique_constraint")
   @@index([walletId])
   @@index([createdAt])
   @@index([walletId, createdAt])
+  @@index([idempotencyKey, clientTransactionDate, amount], name: "idempotency_lookup")
 }
 
 enum Currency {

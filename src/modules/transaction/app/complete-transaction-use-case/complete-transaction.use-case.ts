@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { WalletService } from 'src/modules/wallet/app/services/app-wallet.service';
 import { TransactionStatusEnum } from 'src/shared/validations/transaction/status';
 import { AppLoggerService } from '../../../../shared/logger/app-logger.service';
+import { TransactionService } from '../../domain/services/transaction.service';
 import { Transaction } from '../../domain/transaction.entity';
-import { TransactionService } from '../services/transaction.service';
 import { TransactionOutput } from './output';
 
 @Injectable()

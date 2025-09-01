@@ -1,11 +1,16 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { AppLoggerService } from '../../../../shared/logger/app-logger.service';
 import { jsonStringifyReplacer } from '../../../../shared/utils/json.utils';
 import { TransactionStatusEnum } from '../../../../shared/validations/transaction/status';
+import { TransactionInput, UpdateTransactionInput } from '../../app/input';
 import { Transaction } from '../../domain/transaction.entity';
 import type { TransactionRepository } from '../../domain/transaction.repo';
 import { TRANSACTION_REPOSITORY_TOKEN } from '../../domain/transaction.repo';
-import { TransactionInput, UpdateTransactionInput } from '../input';
 
 @Injectable()
 export class TransactionService {
@@ -90,5 +95,26 @@ export class TransactionService {
       throw new BadRequestException(err);
     }
     return transaction;
+  }
+
+  public async checkIdempotency(
+    idempotencyKey: string,
+    clientTransactionDate: Date,
+    amount: bigint,
+  ): Promise<void> {
+    const transaction = await this.transactionRepo.getByIdempotencyKey(
+      idempotencyKey,
+      clientTransactionDate,
+      amount,
+    );
+    if (transaction) {
+      const err = `Transaction found for Idempotency Key: ${idempotencyKey}`;
+      this.logger.error(this.logPrefix, err);
+      throw new ConflictException(err);
+    }
+    this.logger.debug(
+      this.logPrefix,
+      `No existing transaction found for Idempotency Key: ${idempotencyKey}. Proceeding to create a new one.`,
+    );
   }
 }
