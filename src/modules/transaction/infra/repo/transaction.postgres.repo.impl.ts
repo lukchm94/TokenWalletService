@@ -99,4 +99,39 @@ export class TransactionRepoImpl implements TransactionRepository {
     });
     return Transaction.create(updatedTransaction);
   }
+
+  async getByIdempotencyKey(
+    idempotencyKey: string,
+    clientTransactionDate: Date,
+    amount: bigint,
+  ): Promise<Transaction | null> {
+    this.logger.log(
+      this.logPrefix,
+      `Searching for transaction with idempotencyKey: ${idempotencyKey}`,
+    );
+    const result = await this.db.transaction.findFirst({
+      where: {
+        AND: [
+          { idempotencyKey: idempotencyKey },
+          { clientTransactionDate: new Date(clientTransactionDate) },
+          { amount: amount },
+        ],
+      },
+    });
+
+    if (!result) {
+      this.logger.debug(
+        this.logPrefix,
+        `No transaction found with idempotencyKey: ${idempotencyKey}`,
+      );
+      return null;
+    }
+
+    this.logger.warn(
+      this.logPrefix,
+      `Found transaction with idempotencyKey: ${result.idempotencyKey}`,
+    );
+
+    return Transaction.create(result);
+  }
 }

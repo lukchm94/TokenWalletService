@@ -3,7 +3,7 @@ import { AppLoggerService } from '../../../../shared/logger/app-logger.service';
 import { TransactionStatusEnum } from '../../../../shared/validations/transaction/status';
 import { TransactionRepresentation } from '../../api/representation';
 import { TransactionRepresentationMapper } from '../../api/representationMapper';
-import { TransactionService } from '../services/transaction.service';
+import { TransactionService } from '../../domain/services/transaction.service';
 
 @Injectable()
 export class CancelTransactionUseCase {

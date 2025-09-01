@@ -6,6 +6,8 @@ export interface CreateTransactionInput {
   tokenId: string;
   targetCurrency: CurrencyEnum;
   amount: bigint;
+  clientTransactionDate: Date;
+  idempotencyKey: string;
 }
 
 export interface UpdateTransactionInput {
@@ -20,4 +22,6 @@ export interface TransactionInput {
   originCurrency: CurrencyEnum;
   currentCurrency: CurrencyEnum;
   amount: bigint;
+  clientTransactionDate?: Date;
+  idempotencyKey?: string;
 }

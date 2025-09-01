@@ -24,6 +24,8 @@ export class Transaction {
     public readonly originCurrency: CurrencyType,
     public readonly currentCurrency: CurrencyType,
     public readonly amount: bigint,
+    public readonly clientTransactionDate: Date | null,
+    public readonly idempotencyKey: string | null,
   ) {}
 
   public static create(params: {
@@ -34,6 +36,8 @@ export class Transaction {
     originCurrency: string;
     currentCurrency: string;
     amount: bigint;
+    clientTransactionDate: Date | null;
+    idempotencyKey: string | null;
   }): Transaction {
     const type = this.validateTransactionType(params.type);
     const status = this.validateTransactionStatus(params.status);
@@ -48,6 +52,8 @@ export class Transaction {
       origin,
       current,
       params.amount,
+      params.clientTransactionDate,
+      params.idempotencyKey,
     );
   }
 
