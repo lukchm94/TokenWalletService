@@ -14,4 +14,5 @@ export enum WalletRoutes {
 export enum TransactionRoutes {
   COMPLETE = 'complete/:walletId',
   CANCEL = 'cancel/:transactionId',
+  WEBHOOK = 'webhook',
 }

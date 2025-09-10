@@ -14,6 +14,7 @@ import { EnvVariables } from '../../../config/envEnums';
 import { AppLoggerService } from '../../../logger/app-logger.service';
 import { CurrencyEnum, validCurrencies } from '../../../validations/currency';
 import { CurrencyApiResponse, ExchangeRate } from '../output';
+
 @Injectable()
 export class CurrencyClientService {
   private readonly baseUrl: string;
@@ -72,7 +73,6 @@ export class CurrencyClientService {
         `Fetching exchange rates for base currency: ${baseCurrency}`,
       );
       const response: AxiosResponse<CurrencyApiResponse> = await firstValueFrom(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         this.httpService.get<CurrencyApiResponse>(
           `${this.baseUrl}${baseCurrency}`,
         ),
