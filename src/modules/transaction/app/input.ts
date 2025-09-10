@@ -25,3 +25,11 @@ export interface TransactionInput {
   clientTransactionDate?: Date;
   idempotencyKey?: string;
 }
+
+export interface WebhookPayload {
+  id: number;
+  status: TransactionStatusEnum;
+  amount: number;
+  currency: CurrencyEnum;
+  originCreatedAt: Date;
+}

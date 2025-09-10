@@ -12,6 +12,8 @@ import {
   Post,
   ValidationPipe,
 } from '@nestjs/common';
+import { GatewayOutput } from 'src/modules/gateway/api/output';
+import { TransactionWebhookDto } from 'src/shared/dto/transaction-webhook-payload.dto';
 import { FundsRepresentation } from '../../../modules/wallet/api/representation';
 import { CreateTransactionDto } from '../../../shared/dto/create-transaction.dto';
 import { AppLoggerService } from '../../../shared/logger/app-logger.service';
@@ -21,12 +23,10 @@ import { CancelTransactionUseCase } from '../app/cancel-transaction-use-case/can
 import { CompleteTransactionUseCase } from '../app/complete-transaction-use-case/complete-transaction.use-case';
 import { CreateTransactionUseCase } from '../app/create-transaction-use-case/create-transaction.use-case';
 import { CreateTransactionInput } from '../app/input';
+import { UpdateTransactionFromWebhookUseCase } from '../app/update-transaction-from-webhook-use-case/update-transaction-from-webhook.use-case';
 import { TransactionService } from '../domain/services/transaction.service';
 import { Transaction } from '../domain/transaction.entity';
-import {
-  OutputRepresentation,
-  TransactionRepresentation,
-} from './representation';
+import { TransactionRepresentation } from './representation';
 import { TransactionRepresentationMapper } from './representationMapper';
 
 @Controller(ApiRoutes.TRANSACTION)
@@ -41,6 +41,7 @@ export class TransactionController {
     private readonly completeTransactionUseCase: CompleteTransactionUseCase,
     private readonly transactionRepresentationMapper: TransactionRepresentationMapper,
     private readonly cancelTransactionUseCase: CancelTransactionUseCase,
+    private readonly updateTransactionFromWebhookUseCase: UpdateTransactionFromWebhookUseCase,
   ) {}
 
   @Post()
@@ -101,19 +102,17 @@ export class TransactionController {
     };
   }
 
-  @Patch(TransactionRoutes.COMPLETE)
+  @Post(TransactionRoutes.COMPLETE)
   @HttpCode(HttpStatus.OK)
   async completeTransactions(
     @Param('walletId', ParseIntPipe) walletId: number,
-  ): Promise<{ elements: number; data: OutputRepresentation[] }> {
+  ): Promise<{ elements: number; data: GatewayOutput[] }> {
     this.logger.log(
       this.logPrefix,
       `Completing all transactions for wallet: ${walletId}`,
     );
     const results = await this.completeTransactionUseCase.run(walletId);
-    const representation =
-      this.transactionRepresentationMapper.getOutput(results);
-    return { elements: representation.length, data: representation };
+    return { elements: results.length, data: results };
   }
 
   @Patch(TransactionRoutes.CANCEL)
@@ -123,5 +122,43 @@ export class TransactionController {
   ): Promise<TransactionRepresentation> {
     const result = await this.cancelTransactionUseCase.run(transactionId);
     return result;
+  }
+
+  @Post(TransactionRoutes.WEBHOOK)
+  @HttpCode(HttpStatus.OK)
+  async webhook(
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
+      }),
+    )
+    input: TransactionWebhookDto,
+  ): Promise<void> {
+    try {
+      this.logger.log(
+        this.logPrefix,
+        `Webhook called with input: ${JSON.stringify(input, jsonStringifyReplacer)}`,
+      );
+      const transaction =
+        await this.updateTransactionFromWebhookUseCase.run(input);
+      this.logger.log(
+        this.logPrefix,
+        `Processes transaction: ${JSON.stringify(transaction, jsonStringifyReplacer)}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        this.logPrefix,
+        `Error processing webhook: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      if (error instanceof Error && error.stack) {
+        this.logger.error(this.logPrefix, error.stack);
+      }
+      throw error;
+    }
   }
 }
