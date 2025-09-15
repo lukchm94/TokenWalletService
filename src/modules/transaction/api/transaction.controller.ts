@@ -172,8 +172,9 @@ export class TransactionController {
       this.logPrefix,
       `RabbitMQ test endpoint called. Sending test message for transactionId: ${testTransactionId}`,
     );
+    // TODO implement the proper logic here
     const result =
-      await this.transactionRabbitService.sendTransactionCompleteMessage(
+      this.transactionRabbitService.sendTransactionCompleteMessage(
         testTransactionId,
       );
     this.logger.log(

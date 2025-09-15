@@ -2,7 +2,8 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { AppLoggerService } from '../../../shared/logger/app-logger.service';
-import { RabbitClientNames, RabbitMQMessages } from '../rabbit.enum';
+import { TransactionStatusEnum } from '../../../shared/validations/transaction/status';
+import { RabbitClientNames, RabbitQueues } from '../rabbit.enum';
 
 @Injectable()
 export class TransactionRabbitService implements OnModuleInit {
@@ -20,19 +21,20 @@ export class TransactionRabbitService implements OnModuleInit {
     await this.client.connect();
   }
 
-  async sendTransactionCompleteMessage(transactionId: string): Promise<{
+  sendTransactionCompleteMessage(transactionId: string): {
     message: string;
     transactionId: string;
-  }> {
+  } {
+    // TODO: Implement proper logic for sending transaction complete message
     this.logger.debug(
       this.logPrefix,
       `Sending transaction complete message for transactionId: ${transactionId}`,
     );
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      await this.client!.emit(RabbitMQMessages.TRANSACTION_REQUEST, {
+      this.client!.emit(RabbitQueues.REQ, {
         transactionId,
-        status: 'COMPLETED',
+        status: TransactionStatusEnum.PENDING,
       });
       return { message: 'Transaction sent for validation', transactionId };
     } catch (error) {

@@ -6,6 +6,7 @@ import { WalletModule } from './modules/wallet/wallet.module';
 import { CurrencyClientModule } from './shared/clients/currencyExchange/currency.module';
 import { PrismaModule } from './shared/database/prisma.module';
 import { LoggerModule } from './shared/logger/logger.module';
+import { RabbitModule } from './shared/rabbitMQ/rabbit.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { LoggerModule } from './shared/logger/logger.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    RabbitModule,
   ],
 })
 export class AppModule {}
