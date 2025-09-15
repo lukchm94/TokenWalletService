@@ -6,6 +6,7 @@ import { WalletModule } from './modules/wallet/wallet.module';
 import { CurrencyClientModule } from './shared/clients/currencyExchange/currency.module';
 import { PrismaModule } from './shared/database/prisma.module';
 import { LoggerModule } from './shared/logger/logger.module';
+
 @Module({
   imports: [
     HealthModule,

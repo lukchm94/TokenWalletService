@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { GatewayOutput } from 'src/modules/gateway/api/output';
 import { TransactionWebhookDto } from 'src/shared/dto/transaction-webhook-payload.dto';
+import { TransactionRabbitService } from 'src/shared/rabbitMQ/services/transaction.rabbit.service';
 import { FundsRepresentation } from '../../../modules/wallet/api/representation';
 import { CreateTransactionDto } from '../../../shared/dto/create-transaction.dto';
 import { AppLoggerService } from '../../../shared/logger/app-logger.service';
@@ -42,6 +43,7 @@ export class TransactionController {
     private readonly transactionRepresentationMapper: TransactionRepresentationMapper,
     private readonly cancelTransactionUseCase: CancelTransactionUseCase,
     private readonly updateTransactionFromWebhookUseCase: UpdateTransactionFromWebhookUseCase,
+    private readonly transactionRabbitService: TransactionRabbitService,
   ) {}
 
   @Post()
@@ -160,5 +162,24 @@ export class TransactionController {
       }
       throw error;
     }
+  }
+
+  @Post('/rabbit-test')
+  @HttpCode(HttpStatus.OK)
+  async rabbitTest(): Promise<{ message: string; transactionId: string }> {
+    const testTransactionId = '1';
+    this.logger.log(
+      this.logPrefix,
+      `RabbitMQ test endpoint called. Sending test message for transactionId: ${testTransactionId}`,
+    );
+    const result =
+      await this.transactionRabbitService.sendTransactionCompleteMessage(
+        testTransactionId,
+      );
+    this.logger.log(
+      this.logPrefix,
+      `RabbitMQ test message sent for transactionId: ${JSON.stringify(result, jsonStringifyReplacer)}`,
+    );
+    return result;
   }
 }

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { LoggerModule } from '../../shared/logger/logger.module';
+import { RabbitModule } from '../../shared/rabbitMQ/rabbit.module';
 import { GatewayModule } from '../gateway/gateway.module';
 import { WalletModule } from '../wallet/wallet.module';
 import { TransactionRepresentationMapper } from './api/representationMapper';
@@ -13,7 +14,7 @@ import { TRANSACTION_REPOSITORY_TOKEN } from './domain/transaction.repo';
 import { TransactionRepoImpl } from './infra/repo/transaction.postgres.repo.impl';
 
 @Module({
-  imports: [LoggerModule, WalletModule, GatewayModule],
+  imports: [LoggerModule, WalletModule, GatewayModule, RabbitModule],
   controllers: [TransactionController],
   providers: [
     TransactionService,
