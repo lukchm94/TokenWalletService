@@ -14,16 +14,17 @@ import {
 } from '@nestjs/common';
 import { GatewayOutput } from 'src/modules/gateway/api/output';
 import { TransactionWebhookDto } from 'src/shared/dto/transaction-webhook-payload.dto';
-import { TransactionRabbitService } from 'src/shared/rabbitMQ/services/transaction.rabbit.service';
 import { FundsRepresentation } from '../../../modules/wallet/api/representation';
 import { CreateTransactionDto } from '../../../shared/dto/create-transaction.dto';
 import { AppLoggerService } from '../../../shared/logger/app-logger.service';
+import { TransactionEvent } from '../../../shared/rabbitMQ/services/transaction.request.event.input';
 import { ApiRoutes, TransactionRoutes } from '../../../shared/router/routes';
 import { jsonStringifyReplacer } from '../../../shared/utils/json.utils';
 import { CancelTransactionUseCase } from '../app/cancel-transaction-use-case/cancel-transaction.use-case';
 import { CompleteTransactionUseCase } from '../app/complete-transaction-use-case/complete-transaction.use-case';
 import { CreateTransactionUseCase } from '../app/create-transaction-use-case/create-transaction.use-case';
 import { CreateTransactionInput } from '../app/input';
+import { SendCompleteTransactionEventUseCase } from '../app/send-complete-trx-event.use-case/send-complete-trx-event.use-case';
 import { UpdateTransactionFromWebhookUseCase } from '../app/update-transaction-from-webhook-use-case/update-transaction-from-webhook.use-case';
 import { TransactionService } from '../domain/services/transaction.service';
 import { Transaction } from '../domain/transaction.entity';
@@ -38,12 +39,12 @@ export class TransactionController {
   constructor(
     private readonly logger: AppLoggerService,
     private readonly transactionService: TransactionService,
+    private readonly transactionRepresentationMapper: TransactionRepresentationMapper,
     private readonly createTransactionUseCase: CreateTransactionUseCase,
     private readonly completeTransactionUseCase: CompleteTransactionUseCase,
-    private readonly transactionRepresentationMapper: TransactionRepresentationMapper,
     private readonly cancelTransactionUseCase: CancelTransactionUseCase,
     private readonly updateTransactionFromWebhookUseCase: UpdateTransactionFromWebhookUseCase,
-    private readonly transactionRabbitService: TransactionRabbitService,
+    private readonly sendCompleteTransactionEventUseCase: SendCompleteTransactionEventUseCase,
   ) {}
 
   @Post()
@@ -164,23 +165,13 @@ export class TransactionController {
     }
   }
 
-  @Post('/rabbit-test')
+  @Post(TransactionRoutes.COMPLETE_TRX_EVENTS)
   @HttpCode(HttpStatus.OK)
-  async rabbitTest(): Promise<{ message: string; transactionId: string }> {
-    const testTransactionId = '1';
-    this.logger.log(
-      this.logPrefix,
-      `RabbitMQ test endpoint called. Sending test message for transactionId: ${testTransactionId}`,
-    );
-    // TODO implement the proper logic here
+  async rabbitTest(
+    @Param('transactionId', ParseIntPipe) transactionId: number,
+  ): Promise<TransactionEvent> {
     const result =
-      this.transactionRabbitService.sendTransactionCompleteMessage(
-        testTransactionId,
-      );
-    this.logger.log(
-      this.logPrefix,
-      `RabbitMQ test message sent for transactionId: ${JSON.stringify(result, jsonStringifyReplacer)}`,
-    );
+      await this.sendCompleteTransactionEventUseCase.run(transactionId);
     return result;
   }
 }

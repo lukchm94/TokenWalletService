@@ -64,4 +64,5 @@ enum TransactionStatus {
   COMPLETED
   FAILED
   CANCELLED
+  GATEWAY
 }

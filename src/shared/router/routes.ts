@@ -15,4 +15,5 @@ export enum TransactionRoutes {
   COMPLETE = 'complete/:walletId',
   CANCEL = 'cancel/:transactionId',
   WEBHOOK = 'webhook',
+  COMPLETE_TRX_EVENTS = 'complete/event/:transactionId',
 }

@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { Transaction } from '../../../modules/transaction/domain/transaction.entity';
 import { AppLoggerService } from '../../../shared/logger/app-logger.service';
-import { TransactionStatusEnum } from '../../../shared/validations/transaction/status';
 import { RabbitClientNames, RabbitQueues } from '../rabbit.enum';
+import { TransactionEvent } from './transaction.request.event.input';
 
 @Injectable()
 export class TransactionRabbitService implements OnModuleInit {
@@ -17,30 +17,24 @@ export class TransactionRabbitService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await this.client.connect();
   }
 
-  sendTransactionCompleteMessage(transactionId: string): {
-    message: string;
-    transactionId: string;
-  } {
-    // TODO: Implement proper logic for sending transaction complete message
-    this.logger.debug(
-      this.logPrefix,
-      `Sending transaction complete message for transactionId: ${transactionId}`,
-    );
+  sendTrxRequest(transaction: Transaction): TransactionEvent {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      this.client!.emit(RabbitQueues.REQ, {
-        transactionId,
-        status: TransactionStatusEnum.PENDING,
+      const eventInput = this.mapTransactionToEvent(transaction);
+      this.client.emit(RabbitQueues.REQ, {
+        eventInput,
       });
-      return { message: 'Transaction sent for validation', transactionId };
+      this.logger.log(
+        this.logPrefix,
+        `Successfully sent an event ${JSON.stringify(eventInput)} to "${RabbitQueues.REQ}" queue using ${RabbitClientNames.TRANSACTION_CLIENT} client.`,
+      );
+      return eventInput;
     } catch (error) {
       this.logger.error(
         this.logPrefix,
-        `Error sending transaction complete message for transactionId: ${transactionId}`,
+        `Error sending transaction complete message for transactionId: ${transaction.id}`,
         (error as Error).stack,
       );
       throw error;
@@ -57,5 +51,18 @@ export class TransactionRabbitService implements OnModuleInit {
     );
     await new Promise((resolve) => setTimeout(resolve, 1000));
     // Here you can add logic to process the response message as needed
+  }
+
+  private mapTransactionToEvent(transaction: Transaction): TransactionEvent {
+    const input: TransactionEvent = {
+      id: transaction.id,
+      amount: Number(transaction.amount),
+      currency: transaction.currentCurrency,
+      status: transaction.status,
+      originCreatedAt: transaction.clientTransactionDate
+        ? transaction.clientTransactionDate
+        : new Date(),
+    };
+    return input;
   }
 }
