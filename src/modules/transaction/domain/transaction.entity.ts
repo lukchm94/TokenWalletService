@@ -76,6 +76,7 @@ export class Transaction {
     }
     return status as TransactionStatusType;
   }
+
   private static validateCurrency(currency: string): CurrencyType {
     if (!CURRENCY_TYPE.includes(currency as CurrencyType)) {
       throw new Error(

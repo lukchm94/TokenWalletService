@@ -3,10 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
-import { jsonStringifyReplacer } from 'src/shared/utils/json.utils';
 import { WebhookPayload } from '../../../modules/transaction/app/input';
 import { EnvVariables } from '../../../shared/config/envEnums';
 import { AppLoggerService } from '../../../shared/logger/app-logger.service';
+import { jsonStringifyReplacer } from '../../../shared/utils/json.utils';
 import { GatewayOutput, GatewayResult } from '../api/output';
 
 @Injectable()

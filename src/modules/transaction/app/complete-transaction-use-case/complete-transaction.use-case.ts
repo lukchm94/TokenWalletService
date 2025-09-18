@@ -72,6 +72,14 @@ export class CompleteTransactionUseCase {
       this.logger.error(this.logPrefix, err);
       throw new BadGatewayException(err);
     }
+    const updatedTransaction = await this.transactionService.update({
+      transactionId: transaction.id,
+      status: TransactionStatusEnum.GATEWAY,
+    });
+    this.logger.log(
+      this.logPrefix,
+      `Updating status of transaction: ${updatedTransaction.id} from ${transaction.status} to ${updatedTransaction.status}`,
+    );
     return gatewayResponse;
   }
 
