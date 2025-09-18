@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import type { TransactionResponseEvent } from '../../../modules/rabbitMQ/services/interfaces/transaction.response.event.input';
+import type { TransactionEvent } from '../../../modules/rabbitMQ/services/interfaces/transaction.request.event.input';
 import { TransactionRabbitService } from '../../../modules/rabbitMQ/services/transaction.rabbit.service';
 import { AppLoggerService } from '../../../shared/logger/app-logger.service';
 import { RabbitQueues } from '../../rabbitMQ/rabbit.enum';
@@ -21,10 +21,10 @@ export class RabbitController {
   ) {}
 
   @EventPattern(RabbitQueues.RES)
-  async handleTransactionResponse(@Payload() data: TransactionResponseEvent) {
+  async handleTransactionResponse(@Payload() data: TransactionEvent) {
     this.appLogger.log(
       this.logPrefix,
-      `Starting processing TransactionResponseEvent: ${JSON.stringify(data)}`,
+      `Starting processing TransactionEvent: ${JSON.stringify(data)}`,
     );
     const input = this.mapper.fromEventToUpdateTrxInput(data);
     const result = await this.updateTrxGatewayResponseUseCase.run(

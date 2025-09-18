@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TransactionResponseEvent } from '../../../modules/rabbitMQ/services/interfaces/transaction.response.event.input';
+import { TransactionEvent } from '../../../modules/rabbitMQ/services/interfaces/transaction.request.event.input';
 import { TransactionWebhookDto } from '../../../shared/dto/transaction-webhook-payload.dto';
 import { AppLoggerService } from '../../../shared/logger/app-logger.service';
 import {
@@ -32,15 +32,16 @@ export default class TransactionMapper {
   }
 
   public fromEventToUpdateTrxInput(
-    event: TransactionResponseEvent,
+    event: TransactionEvent,
   ): UpdateTransactionInput {
     this.appLogger.log(
       this.logPrefix,
-      `Converting TransactionResponseEvent: ${JSON.stringify(event)} to UpdateTransactionInput`,
+      `Converting TransactionEvent: ${JSON.stringify(event)} to UpdateTransactionInput`,
     );
-    const statusEnum = this.convertStatusToEnum(event.data.status);
+    const statusEnum = this.convertStatusToEnum(event.status);
+    this.appLogger.log(this.logPrefix, `FOUND ENUM: ${statusEnum}`);
     return {
-      transactionId: event.data.id,
+      transactionId: event.id,
       status: statusEnum,
     };
   }
