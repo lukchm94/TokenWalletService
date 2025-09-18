@@ -1,9 +1,11 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Transaction } from '../../../modules/transaction/domain/transaction.entity';
+import { TransactionOutput } from '../../../modules/transaction/app/complete-transaction-use-case/output';
 import { AppLoggerService } from '../../../shared/logger/app-logger.service';
+import { jsonStringifyReplacer } from '../../../shared/utils/json.utils';
+import { Transaction } from '../../transaction/domain/transaction.entity';
 import { RabbitClientNames, RabbitQueues } from '../rabbit.enum';
-import { TransactionEvent } from './transaction.request.event.input';
+import { TransactionEvent } from './interfaces/transaction.request.event.input';
 
 @Injectable()
 export class TransactionRabbitService implements OnModuleInit {
@@ -41,16 +43,13 @@ export class TransactionRabbitService implements OnModuleInit {
     }
   }
 
-  async processTransactionResponse(message: {
-    transactionId: string;
-    status: string;
-  }) {
+  async ackTransactionResponse(event: TransactionOutput) {
     this.logger.debug(
       this.logPrefix,
-      `Processing transaction response for transactionId: ${message.transactionId} with status: ${message.status}`,
+      `Processed transaction response for transaction: ${JSON.stringify(event, jsonStringifyReplacer)}. Updated wallet balance: ${Number(event.funds?.currentBalance)}`,
     );
+
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    // Here you can add logic to process the response message as needed
   }
 
   private mapTransactionToEvent(transaction: Transaction): TransactionEvent {

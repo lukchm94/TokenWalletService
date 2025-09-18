@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { WalletService } from '../../../../modules/wallet/app/services/app-wallet.service';
 import { AppLoggerService } from '../../../../shared/logger/app-logger.service';
-import { TransactionRabbitService } from '../../../../shared/rabbitMQ/services/transaction.rabbit.service';
-import { TransactionEvent } from '../../../../shared/rabbitMQ/services/transaction.request.event.input';
 import { jsonStringifyReplacer } from '../../../../shared/utils/json.utils';
 import { TransactionStatusEnum } from '../../../../shared/validations/transaction/status';
+import { TransactionEvent } from '../../../rabbitMQ/services/interfaces/transaction.request.event.input';
+import { TransactionRabbitService } from '../../../rabbitMQ/services/transaction.rabbit.service';
 import { TransactionService } from '../../domain/services/transaction.service';
 import { Transaction } from '../../domain/transaction.entity';
 

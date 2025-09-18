@@ -12,22 +12,24 @@ import {
   Post,
   ValidationPipe,
 } from '@nestjs/common';
-import { GatewayOutput } from 'src/modules/gateway/api/output';
-import { TransactionWebhookDto } from 'src/shared/dto/transaction-webhook-payload.dto';
+import { GatewayOutput } from '../../../modules/gateway/api/output';
 import { FundsRepresentation } from '../../../modules/wallet/api/representation';
 import { CreateTransactionDto } from '../../../shared/dto/create-transaction.dto';
+import { TransactionWebhookDto } from '../../../shared/dto/transaction-webhook-payload.dto';
 import { AppLoggerService } from '../../../shared/logger/app-logger.service';
-import { TransactionEvent } from '../../../shared/rabbitMQ/services/transaction.request.event.input';
 import { ApiRoutes, TransactionRoutes } from '../../../shared/router/routes';
 import { jsonStringifyReplacer } from '../../../shared/utils/json.utils';
+import { TransactionEvent } from '../../rabbitMQ/services/interfaces/transaction.request.event.input';
 import { CancelTransactionUseCase } from '../app/cancel-transaction-use-case/cancel-transaction.use-case';
 import { CompleteTransactionUseCase } from '../app/complete-transaction-use-case/complete-transaction.use-case';
 import { CreateTransactionUseCase } from '../app/create-transaction-use-case/create-transaction.use-case';
 import { CreateTransactionInput } from '../app/input';
 import { SendCompleteTransactionEventUseCase } from '../app/send-complete-trx-event.use-case/send-complete-trx-event.use-case';
-import { UpdateTransactionFromWebhookUseCase } from '../app/update-transaction-from-webhook-use-case/update-transaction-from-webhook.use-case';
+import { UpdateTransactionGatewayResponseUseCase } from '../app/update-transaction-gateway-response-use-case/update-transaction-gateway-response.use-case';
+import { UpdateSourceEnum } from '../app/update-transaction-gateway-response-use-case/update.source.enum';
 import { TransactionService } from '../domain/services/transaction.service';
 import { Transaction } from '../domain/transaction.entity';
+import TransactionMapper from '../mappers/transaction.mapper';
 import { TransactionRepresentation } from './representation';
 import { TransactionRepresentationMapper } from './representationMapper';
 
@@ -43,8 +45,9 @@ export class TransactionController {
     private readonly createTransactionUseCase: CreateTransactionUseCase,
     private readonly completeTransactionUseCase: CompleteTransactionUseCase,
     private readonly cancelTransactionUseCase: CancelTransactionUseCase,
-    private readonly updateTransactionFromWebhookUseCase: UpdateTransactionFromWebhookUseCase,
+    private readonly updateTrxGatewayResponseUseCase: UpdateTransactionGatewayResponseUseCase,
     private readonly sendCompleteTransactionEventUseCase: SendCompleteTransactionEventUseCase,
+    private readonly transactionMapper: TransactionMapper,
   ) {}
 
   @Post()
@@ -140,15 +143,19 @@ export class TransactionController {
         },
       }),
     )
-    input: TransactionWebhookDto,
+    webhookDto: TransactionWebhookDto,
   ): Promise<void> {
     try {
       this.logger.log(
         this.logPrefix,
-        `Webhook called with input: ${JSON.stringify(input, jsonStringifyReplacer)}`,
+        `Webhook called with input: ${JSON.stringify(webhookDto, jsonStringifyReplacer)}`,
       );
-      const transaction =
-        await this.updateTransactionFromWebhookUseCase.run(input);
+      const input =
+        this.transactionMapper.fromWebhookToUpdateTrxInput(webhookDto);
+      const transaction = await this.updateTrxGatewayResponseUseCase.run(
+        input,
+        UpdateSourceEnum.WEBHOOK,
+      );
       this.logger.log(
         this.logPrefix,
         `Processes transaction: ${JSON.stringify(transaction, jsonStringifyReplacer)}`,

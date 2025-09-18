@@ -1,4 +1,4 @@
-import { FundsInWallet } from 'src/modules/wallet/app/output';
+import { FundsInWallet } from '../../../../modules/wallet/app/output';
 import { Transaction } from '../../domain/transaction.entity';
 
 export interface TransactionOutput {

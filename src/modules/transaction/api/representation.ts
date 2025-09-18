@@ -1,4 +1,4 @@
-import { FundsRepresentation } from 'src/modules/wallet/api/representation';
+import { FundsRepresentation } from '../../../modules/wallet/api/representation';
 import { CurrencyEnum } from '../../../shared/validations/currency';
 import { TransactionStatusEnum } from '../../../shared/validations/transaction/status';
 import { TransactionTypeEnum } from '../../../shared/validations/transaction/type';

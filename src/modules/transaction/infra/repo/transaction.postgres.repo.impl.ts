@@ -7,6 +7,7 @@ import { jsonStringifyReplacer } from '../../../../shared/utils/json.utils';
 import { TransactionInput, UpdateTransactionInput } from '../../app/input';
 import { Transaction } from '../../domain/transaction.entity';
 import { TransactionRepository } from '../../domain/transaction.repo';
+
 @Injectable()
 export class TransactionRepoImpl implements TransactionRepository {
   private get logPrefix(): string {

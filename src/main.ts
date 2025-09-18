@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
-import { RabbitQueues } from './shared/rabbitMQ/rabbit.enum';
+import { RabbitQueues } from './modules/rabbitMQ/rabbit.enum';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
